@@ -1,0 +1,20 @@
+{
+  "name": "seittik-docs",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Seittik documentation",
+  "main": "_static/js/index.js",
+  "author": "Tom Tobin <opensource@alchemicalhydra.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.21.3",
+    "@babel/preset-env": "^7.20.2",
+    "@babel/register": "^7.21.0",
+    "babel-loader": "^9.1.2",
+    "terser-webpack-plugin": "^5.3.7"
+  },
+  "dependencies": {
+    "cash-dom": "^8.1.4",
+    "mermaid": "^10.0.2"
+  }
+}

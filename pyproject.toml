@@ -1,0 +1,167 @@
+[build-system]
+requires = ["poetry-core>=1.5.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.coverage.report]
+exclude_lines = [
+    'pragma: no cover',
+    '@(abc\.)?abstractmethod',
+]
+show_missing = true
+
+[tool.coverage.run]
+source = ["src"]
+
+[tool.isort]
+balanced_wrapping = true
+combine_as_imports = true
+default_section = 'THIRDPARTY'
+force_sort_within_sections = true
+include_trailing_comma = true
+known_first_party = ['seittik']
+multi_line_output = 5
+order_by_type = false
+
+[tool.poe.tasks]
+# -a : Write all files
+# -b : Set builder
+# -d : Doctree cache dir
+# -E : Don't cache, always read
+doc.cmd = './python_packages/bin/sphinx-build -a -E -d doc/.doctrees -b html doc doc/_build/html'
+doc.help = "Build documentation"
+doclive.cmd = './python_packages/bin/sphinx-autobuild -a -d doc/.doctrees -E -b html --watch src/seittik --watch CHANGELOG.md --watch LICENSE.md doc doc/_build/html'
+doclive.help = "Build documentation with live autoreload"
+
+[tool.poetry]
+name = 'seittik'
+version = '2023.03'
+description = "A functional programming library that aims to supplant Python's existing functional interfaces, offering a more comprehensive and expressive alternative."
+license = 'MIT'
+authors = ['Tom Tobin <opensource@alchemicalhydra.com>']
+readme = 'README.md'
+keywords = [
+  'functional',
+  'functools',
+  'iterable',
+  'iteration',
+  'iterator',
+  'itertools',
+  'lambda',
+  'pipe',
+  'shear',
+]
+classifiers = [
+  'Development Status :: 3 - Alpha',
+  'Environment :: Console',
+  'Intended Audience :: Developers',
+  'License :: OSI Approved :: MIT License',
+  'Natural Language :: English',
+  'Programming Language :: Python',
+  'Programming Language :: Python :: 3',
+  'Programming Language :: Python :: 3 :: Only',
+  'Programming Language :: Python :: 3.10',
+  'Programming Language :: Python :: 3.11',
+  'Topic :: Software Development :: Libraries',
+  'Topic :: Software Development :: Libraries :: Python Modules',
+]
+packages = [
+  { include = 'seittik', from = 'src' },
+]
+
+[tool.poetry.urls]
+'Homepage' = 'https://seittik.com/'
+'Documentation' = 'https://seittik.com/'
+'Changelog' = 'https://seittik.com/changelog.html'
+'Source Code' = 'https://github.com/alchemicalhydra/seittik'
+'Issue Tracker' = 'https://github.com/alchemicalhydra/seittik/issues'
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+# General
+ipython = ">=8.11.0"
+# Tasks
+poethepoet = ">=0.18.1"
+# Tests
+coverage = ">=7.2.1"
+hypothesis = ">=6.69.0"
+pyfakefs = "^5.1.0"
+pytest = ">=7.2.2"
+pytest-cov = ">=4.0.0"
+pytest-isort = ">=3.1.0"
+pytest-xdist = ">=3.2.1"
+# Docs
+myst-parser = ">=1.0.0"
+pydata-sphinx-theme = ">=0.13.1"
+sphinx = ">=6.1.3"
+sphinx-autobuild = ">=2021.3.14"
+sphinx-autodoc2 = ">=0.4.2"
+sphinxcontrib-dooble = ">=1.0.1"
+sphinxcontrib-mermaid = ">=0.8.1"
+# Necessary to avoid `sphinx-autobuild` needlessly chewing up CPU; its
+# dependency `livereload` has this as a silent optional dependency of its own.
+pyinotify = ">=0.9.6"
+
+[tool.pylint.basic]
+argument-rgx = "[a-zA-Z][a-zA-Z0-9_]*"
+attr-rgx = "[a-z_][a-z0-9_]*"
+class-attribute-rgx = "[a-z_][a-z0-9_]*"
+class-naming-style = "any"
+method-rgx = "[a-z_][a-z0-9_]*"
+variable-rgx = "[a-z_][a-z0-9_]*"
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.pylint."messages control"]
+disable = [
+  # Acts stupid with the descriptor protocol
+  'unnecessary-dunder-call',
+
+  # False positives in pattern matching
+  'function-redefined',
+
+  # False positives for positional-only parameters (i.e., before `/`) with
+  # default values
+  'keyword-arg-before-vararg',
+
+  # False positives in try/except/else
+  'no-else-return',
+
+  # False positives
+  'arguments-differ',
+  'no-member',
+  'no-self-argument',
+  'not-an-iterable',
+  'not-callable',
+  'similarities',
+  'stop-iteration-return',
+  'unpacking-non-sequence',
+
+  # Unhelpful
+  'missing-class-docstring',
+  'missing-function-docstring',
+  'missing-module-docstring',
+  'protected-access',
+  'too-few-public-methods',
+  'too-many-arguments',
+  'too-many-branches',
+  'too-many-locals',
+  'too-many-lines',
+  'too-many-nested-blocks',
+  'too-many-public-methods',
+]
+
+[tool.pylint.reports]
+score = false
+
+[tool.pytest.ini_options]
+addopts = [
+  '--cov',
+  '--import-mode=importlib',
+  '--pdbcls=IPython.terminal.debugger:TerminalPdb',
+]
+testpaths = [
+  'test',
+]

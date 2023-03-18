@@ -1,0 +1,8 @@
+/.coverage
+/.hypothesis/
+/doc/.doctrees/
+/doc/_build/
+/doc/_static/js/
+/doc/apidocs/seittik/
+/doc/node_modules/
+/dist/
