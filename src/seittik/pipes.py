@@ -659,7 +659,7 @@ class Pipe:
             """
             p = self.clone()
             def pipe_interleave(ix):
-                iterators = [iter(ix) for ix in self]
+                iterators = [iter(x) for x in ix]
                 if fair:
                     return itertools.chain.from_iterable(zip(*iterators))
                 else:
