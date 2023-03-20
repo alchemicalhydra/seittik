@@ -203,13 +203,13 @@ class Pipe:
 
         ```{marble}
         [ iterfunc(add1, 13) ]
-        -13------------------>
+        -13------------------|
         [      add1(13)      ]
-        ----14--------------->
+        ----14---------------|
         [      add1(14)      ]
-        -------15------------>
+        -------15------------|
         [      add1(15)      ]
-        ----------16--------->
+        ----------16---------|
         [      add1(16)      ]
         -13-14-15-16-17------>
         ```
@@ -356,8 +356,8 @@ class Pipe:
         ```
 
         ```{marble}
-        [       repeat(a)      ]
-        -a--a--a--a--a--a--a--->
+        [ repeat(a)          ]
+        -a--a--a--a--a--a--a->
         ```
         """
         check_int_positive_or_none('n', n)
@@ -591,8 +591,8 @@ class Pipe:
         x---a-b-c-->
          y--d-e-f-->
           z-g-h-i-->
-        [     interleave     ]
-        --a-b-c-d-e-f-g-h-i-->
+        [ chain()           ]
+        --a-b-c-d-e-f-g-h-i->
         ```
         """
 
@@ -630,11 +630,11 @@ class Pipe:
         ```
 
         ```{marble}
-        x---a-b-c-->
-         y--d-e-f-->
-          z-g-h-i-->
-        [     interleave     ]
-        --a-d-g-b-e-h-c-f-i-->
+        x---a-b-c--|
+         y--d-e-f--|
+          z-g-h-i--|
+        [ interleave()      ]
+        --a-d-g-b-e-h-c-f-i->
         ```
         """
 
@@ -766,9 +766,9 @@ class Pipe:
         Equivalent to yielding `(item,) * n` for each item.
 
         ```{marble}
-        -2------------------>
-        [ broadcast(2)      ]
-        -2,2----2,2----2,2-->
+        -2----------------->
+        [ broadcast(2)     ]
+        -2,2----2,2----2,2->
         ```
         """
         p = self.clone()
@@ -962,8 +962,8 @@ class Pipe:
 
         ```{marble}
         -1-2-3-|
-        [ cycle()           ]
-        -1-2-3-1-2-3-1-2-3-->
+        [ cycle()          ]
+        -1-2-3-1-2-3-1-2-3->
         ```
         """
         check_int_positive_or_none('n', n)
@@ -1017,9 +1017,9 @@ class Pipe:
         ```
 
         ```{marble}
-        -a-b-b-c-c-c-a-c-b-b-a-->
-        [ depeat()              ]
-        -a-b---c-----a-c-b---a-->
+        -a-b-b-c-c-c-a-c-b-b-a->
+        [ depeat()             ]
+        -a-b---c-----a-c-b---a->
         ```
         """
         if not callable(key):
@@ -1083,9 +1083,9 @@ class Pipe:
         {{pipe_step}} Skip the first `n` items and yield the rest.
 
         ```{marble}
-        -1-2-3-4-5-6-7-8-9-->
-        [ drop(4)           ]
-        ---------5-6-7-8-9-->
+        -1-2-3-4-5-6-7-8-9->
+        [ drop(4)          ]
+        ---------5-6-7-8-9->
         ```
         """
         check_int_zero_or_positive('n', n)
@@ -1417,9 +1417,9 @@ class Pipe:
         {{pipe_step}} Yield the first `n` items and skip the rest.
 
         ```{marble}
-        -1-2-3-4-5-6-7-8-9-->
-        [ take(4)           ]
-        -1-2-3-4--|
+        -1-2-3-4-5-6-7-8-9->
+        [ take(4)          ]
+        -1-2-3-4-|
         ```
         """
         check_int_zero_or_positive('n', n)
@@ -1469,9 +1469,9 @@ class Pipe:
         ```
 
         ```{marble}
-        -a-b-b-c-c-c-a-c-b-d-a-->
-        [ unique()              ]
-        -a-b---c-----------d---->
+        -a-b-b-c-c-c-a-c-b-d-a->
+        [ unique()             ]
+        -a-b---c-----------d--->
         ```
         """
         if not callable(key):
