@@ -1,5 +1,7 @@
-import random
 import re
+
+from .randutils import SharedRandom
+from .sentinels import _MISSING
 
 
 __all__ = ()
@@ -29,7 +31,8 @@ def parse_dice_str(s):
 
 
 class DiceRoll:
-    def __init__(self, *args):
+    def __init__(self, *args, rng=_MISSING):
+        self._rng = SharedRandom() if rng is _MISSING else rng
         match args:
             case [str() as s]:
                 self.num, self.size, self.modifier = parse_dice_str(s)
@@ -52,7 +55,7 @@ class DiceRoll:
     def roll(self, blunt=False):
         ret = 0
         for _ in range(self.num):
-            roll_result = random.randint(1, self.size)
+            roll_result = self._rng.randint(1, self.size)
             if blunt:
                 roll_result = blunt_roll_result(roll_result)
             ret += roll_result

@@ -22,10 +22,13 @@ from .utils.argutils import (
     check_int, check_int_positive, check_int_positive_or_none,
     check_int_zero_or_positive, check_r_args, check_slice_args, replace,
 )
-from .utils.classutils import classonlymethod, multimethod, partialclassmethod
+from .utils.classutils import (
+    classonlymethod, lazyattr, multimethod, partialclassmethod,
+)
 from .utils.collections import Seen
 from .utils.diceutils import DiceRoll
 from .utils.flatten import flatten
+from .utils.randutils import SHARED_RANDOM
 from .utils.sentinels import _END, _MISSING, _POOL
 from .utils.structutils import calc_struct_input
 from .utils.walk import walk_collection
@@ -109,10 +112,11 @@ class Pipe:
         Out[1]: [1, 2, 3, 4, 5]
     ```
     """
-
-    def __init__(self, source=_MISSING):
+    def __init__(self, source=_MISSING, *, rng=_MISSING):
         self._source = source if source is _MISSING else PlainSource(source)
         self._steps = []
+        if rng is not _MISSING:
+            self._set_rng(rng)
 
     def __call__(self, source):
         """
@@ -210,10 +214,67 @@ class Pipe:
                 # Reference to bare Pipe class
                 case ('cls', _):
                     stage_args.append(self.__class__)
+                # Reference to the Pipe's RNG
+                case ('rng', _):
+                    stage_args.append(self._rng)
                 # Unknown
                 case _:
                     raise ValueError(f"{stage!r} requested an unknown parameter type: {stage_param!r}")
         return stage(*stage_args)
+
+    ##############################################################
+    # Random Number Generator (RNG) support
+
+    @lazyattr
+    def _rng(self):
+        return SHARED_RANDOM
+
+    def _set_rng(self, rng):
+        match rng:
+            case random.Random():
+                self._rng = rng
+            case _ if rng is _MISSING:
+                del self._rng
+            case 'shared':
+                del self._rng
+            case 'pseudo':
+                self._rng = random.Random()
+            case 'crypto':
+                self._rng = random.SystemRandom()
+            case str():
+                raise ValueError(f"'set_rng' accepts string values of 'shared', 'pseudo', or 'crypto'; got {rng!r}")
+            case _:
+                raise TypeError(
+                    "'set_rng' accepts strings or instances of `random.Random`;"
+                    f" got {rng!r} of type {type(rng)!r} instead"
+                )
+
+    def set_rng(self, rng=_MISSING):
+        """
+        Clone this Pipe and set the new Pipe's random number generator to `rng`,
+        which should be an instance of `random.Random`.
+
+        If `rng` is not provided, it will be reset to the shared RNG instance
+        used by default across Python.
+
+        `rng` may optionally be one of the following strings, as a convenience:
+
+        - `"shared"` to reset to the shared RNG instance
+        - `"pseudo"` to create a new instance of `random.Random`
+        - `"crypto"` to create a new instance of `random.SystemRandom`
+        """
+        p = self.clone()
+        p._set_rng(rng)
+        return p
+
+    def seed_rng(self, seed=None):
+        """
+        Clone this Pipe and set the new Pipe's random number generator seed to
+        `seed`.
+        """
+        p = self.clone()
+        p._rng = p._rng.__class__(seed)
+        return p
 
     ##############################################################
     # Clone an existing Pipe
@@ -224,6 +285,9 @@ class Pipe:
 
         It's usually unnecessary to call this explicitly unless building
         alternative Pipes from a template Pipe.
+
+        Cloning a Pipe does *not* replace its RNG; you need to explicitly call
+        {py:meth}`set_rng` or {py:meth}`seed_rng` for that.
         """
         p = self.__class__._with_source(self._source)
         p._steps = self._steps.copy()
@@ -322,9 +386,9 @@ class Pipe:
         ```
         """
         start, stop, step = check_slice_args('range', args, kwargs)
-        def pipe_randrange():
+        def pipe_randrange(rng):
             while True:
-                yield random.randrange(start, stop + 1, step)
+                yield rng.randrange(start, stop + 1, step)
         return cls._with_source(pipe_randrange)
 
     @classonlymethod
@@ -509,8 +573,8 @@ class Pipe:
             Out[1]: [13]
         ```
         """
-        dice = DiceRoll(*args)
-        def pipe_roll():
+        def pipe_roll(rng):
+            dice = DiceRoll(*args, rng=rng)
             while True:
                 yield dice.roll()
         return cls._with_source(pipe_roll)
@@ -1407,11 +1471,11 @@ class Pipe:
         """
         r_min, r_max = check_r_args('r', r, default=_POOL)
         p = self.clone()
-        def pipe_random_permutations(seq):
+        def pipe_random_permutations(seq, rng):
             k_min, k_max = replace(_POOL, len(seq), r_min, r_max)
-            func = random.choices if replacement else random.sample
+            func = rng.choices if replacement else rng.sample
             while True:
-                k = random.randint(k_min, k_max)
+                k = rng.randint(k_min, k_max)
                 yield tuple(func(seq, k=k))
         p._steps.append(pipe_random_permutations)
         return p
