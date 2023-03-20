@@ -642,13 +642,12 @@ class Pipe:
             """
             {{pipe_source}} Yield cross-wise from each of `iterables`.
             """
-            iterators = [iter(ix) for ix in iterables]
             if fair:
-                return cls(itertools.chain.from_iterable(zip(*iterators)))
+                return cls(itertools.chain.from_iterable(zip(*iterables)))
             else:
                 return cls(
                     x for x in itertools.chain.from_iterable(
-                        itertools.zip_longest(*iterators, fillvalue=_MISSING)
+                        itertools.zip_longest(*iterables, fillvalue=_MISSING)
                     )
                     if x is not _MISSING
                 )
@@ -659,13 +658,12 @@ class Pipe:
             """
             p = self.clone()
             def pipe_interleave(ix):
-                iterators = [iter(ix) for ix in self]
                 if fair:
-                    return itertools.chain.from_iterable(zip(*iterators))
+                    return itertools.chain.from_iterable(zip(*ix))
                 else:
                     return (
                         x for x in itertools.chain.from_iterable(
-                            itertools.zip_longest(*iterators, fillvalue=_MISSING)
+                            itertools.zip_longest(*ix, fillvalue=_MISSING)
                         )
                         if x is not _MISSING
                     )
