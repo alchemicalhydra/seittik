@@ -37,6 +37,54 @@ def test_pipe_missing_source():
 
 
 ########################################################################
+# Bad step/sink params
+
+def test_pipe_bad_step_param_unknown():
+    p = Pipe(3)
+    def bad_step_unknown(unknown):
+        pass
+    p._steps.append(bad_step_unknown)
+    with pytest.raises(ValueError):
+        list(p)
+
+
+def test_pipe_bad_step_param_res():
+    p = Pipe(3)
+    def bad_step_res(res):
+        pass
+    p._steps.append(bad_step_res)
+    with pytest.raises(TypeError):
+        list(p)
+
+
+def test_pipe_bad_step_param_ix():
+    p = Pipe(3)
+    def bad_step_ix(ix):
+        pass
+    p._steps.append(bad_step_ix)
+    with pytest.raises(TypeError):
+        list(p)
+
+
+def test_pipe_bad_step_param_seq():
+    p = Pipe(3)
+    def bad_step_seq(seq):
+        pass
+    p._steps.append(bad_step_seq)
+    with pytest.raises(TypeError):
+        list(p)
+
+
+def test_pipe_bad_step_param_pipe():
+    p = Pipe(3)
+    def bad_step_pipe(pipe):
+        pass
+    p._steps.append(bad_step_pipe)
+    with pytest.raises(TypeError):
+        list(p)
+
+
+########################################################################
 # Empty sources
 
 def test_pipe_empty_dict():
@@ -62,6 +110,17 @@ def test_pipe_empty_str():
 def test_pipe_empty_tuple():
     p = Pipe(())
     assert list(p) == []
+
+
+########################################################################
+# Pipe step param
+
+def test_pipe_step_param_pipe():
+    p = Pipe(Pipe([1, 2, 3]))
+    def pipe_step_pipe_param(pipe):
+        return pipe
+    p._steps.append(pipe_step_pipe_param)
+    assert list(p) == [1, 2, 3]
 
 
 ########################################################################
@@ -115,8 +174,13 @@ def test_pipe_getitem_bad():
 ########################################################################
 # Reversal
 
-def test_pipe_reversed():
+def test_pipe_reversed_seq():
     p = Pipe(['a', 'b', 'c', 'd', 'e'])
+    assert reversed(p).list() == ['e', 'd', 'c', 'b', 'a']
+
+
+def test_pipe_reversed_ix():
+    p = Pipe(iter(['a', 'b', 'c', 'd', 'e']))
     assert reversed(p).list() == ['e', 'd', 'c', 'b', 'a']
 
 
@@ -638,6 +702,11 @@ def test_pipe_step_intersperse_2_uneven_fillvalue():
     assert list(p) == ['a', 'b', 'x', 'c', 'd', 'x', 'e', 'y']
 
 
+def test_pipe_step_intersperse_twice():
+    p = Pipe(['a', 'b', 'c', 'd', 'e']).intersperse('x').intersperse('y')
+    assert list(p) == ['a', 'y', 'x', 'y', 'b', 'y', 'x', 'y', 'c', 'y', 'x', 'y', 'd', 'y', 'x', 'y', 'e']
+
+
 # Pipe.label
 
 def test_pipe_step_label():
@@ -867,20 +936,35 @@ def test_pipe_sink_any_pred_false():
 
 # Pipe.contains
 
-def test_pipe_sink_contains_true():
+def test_pipe_sink_contains_true_seq():
     p = Pipe([5, 3, 4, 1, 2])
     assert p.contains(3)
 
 
-def test_pipe_sink_contains_false():
+def test_pipe_sink_contains_false_seq():
     p = Pipe([5, 3, 4, 1, 2])
+    assert not p.contains(6)
+
+
+def test_pipe_sink_contains_true_ix():
+    p = Pipe(iter([5, 3, 4, 1, 2]))
+    assert p.contains(3)
+
+
+def test_pipe_sink_contains_false_ix():
+    p = Pipe(iter([5, 3, 4, 1, 2]))
     assert not p.contains(6)
 
 
 # Pipe.count
 
-def test_pipe_sink_count_5():
+def test_pipe_sink_count_5_seq():
     p = Pipe(['a', 'b', 'c', 'd', 'e'])
+    assert p.count() == 5
+
+
+def test_pipe_sink_count_5_ix():
+    p = Pipe(iter(['a', 'b', 'c', 'd', 'e']))
     assert p.count() == 5
 
 
@@ -1123,17 +1207,33 @@ def test_pipe_sink_none_pred_false():
 
 # Pipe.nth
 
-def test_pipe_sink_nth():
+def test_pipe_sink_nth_seq():
     p = Pipe(['a', 'b', 'c', 'd', 'e'])
     assert p.nth(2) == 'c'
 
 
-def test_pipe_sink_nth_indexerror():
+def test_pipe_sink_nth_ix():
+    p = Pipe(iter(['a', 'b', 'c', 'd', 'e']))
+    assert p.nth(2) == 'c'
+
+
+def test_pipe_sink_nth_indexerror_seq():
     with pytest.raises(IndexError) as excinfo:
         Pipe(['a', 'b', 'c', 'd', 'e']).nth(5)
 
-def test_pipe_sink_nth_default():
+
+def test_pipe_sink_nth_indexerror_ix():
+    with pytest.raises(IndexError) as excinfo:
+        Pipe(iter(['a', 'b', 'c', 'd', 'e'])).nth(5)
+
+
+def test_pipe_sink_nth_default_seq():
     p = Pipe(['a', 'b', 'c', 'd', 'e'])
+    assert p.nth(5, default='meow') == 'meow'
+
+
+def test_pipe_sink_nth_default_ix():
+    p = Pipe(iter(['a', 'b', 'c', 'd', 'e']))
     assert p.nth(5, default='meow') == 'meow'
 
 
