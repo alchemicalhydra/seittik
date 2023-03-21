@@ -23,6 +23,7 @@ multi_line_output = 5
 order_by_type = false
 
 [tool.poe.tasks]
+# sphinx-build / sphinx-autobuild:
 # -a : Write all files
 # -b : Set builder
 # -d : Doctree cache dir
@@ -31,6 +32,9 @@ doc.cmd = './python_packages/bin/sphinx-build -a -E -d doc/.doctrees -b html doc
 doc.help = "Build documentation"
 doclive.cmd = './python_packages/bin/sphinx-autobuild -a -d doc/.doctrees -E -b html --watch src/seittik --watch CHANGELOG.md --watch LICENSE.md doc doc/_build/html'
 doclive.help = "Build documentation with live autoreload"
+# nox:
+nox.cmd = './python_packages/bin/nox'
+nox.help = "Run nox"
 
 [tool.poetry]
 name = 'seittik'
@@ -86,6 +90,7 @@ poethepoet = ">=0.18.1"
 # Tests
 coverage = ">=7.2.2"
 hypothesis = ">=6.70.0"
+nox = ">=2022.11.21"
 pyfakefs = ">=5.1.0"
 pytest = ">=7.2.2"
 pytest-cov = ">=4.0.0"
