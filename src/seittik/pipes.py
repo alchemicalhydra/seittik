@@ -760,9 +760,6 @@ class Pipe:
         Each element of the yielded items will be taken from the input
         sub-iterable matching its index in the tuple.
 
-        The source must be finite, and it will be exhausted upon
-        evaluation.
-
         Passing a zipped iterable back into {py:meth}`Pipe.zip` is equivalent to
         an unzip.
 
@@ -793,6 +790,8 @@ class Pipe:
             """
             {{pipe_step}} Yield the results of zipping together each of this Pipe's
             items.
+
+            The source must be finite, and it will be exhausted upon evaluation.
             """
             p = self.clone()
             if fillvalue is not _MISSING:
