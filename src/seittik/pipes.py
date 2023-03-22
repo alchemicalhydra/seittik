@@ -51,6 +51,17 @@ class EnumerateInfo:
         return f"<EnumerateInfo {index=} {is_first=} {is_last=}>"
 
 
+class PlainSource:
+    def __init__(self, source):
+        self._source = source
+
+    def __repr__(self):
+        return repr(self._source)
+
+    def __call__(self):
+        return self._source
+
+
 class Pipe:
     """
     A fluent interface for processing iterable data.
@@ -100,7 +111,7 @@ class Pipe:
     """
 
     def __init__(self, source=_MISSING):
-        self._source = source
+        self._source = source if source is _MISSING else PlainSource(source)
         self._steps = []
 
     def __call__(self, source):
@@ -109,7 +120,7 @@ class Pipe:
         the existing source, and returns the new Pipe.
         """
         p = self.clone()
-        p._source = source
+        p._source = source if source is _MISSING else PlainSource(source)
         return p
 
     def __getitem__(self, key):
@@ -144,57 +155,65 @@ class Pipe:
     ##############################################################
     # Internal evaluation logic
 
+    @classmethod
+    def _with_source(cls, func):
+        p = cls()
+        p._source = func
+        return p
+
     def _evaluate(self, sink=_MISSING):
         if self._source is _MISSING:
             raise TypeError("A source must be provided to evaluate a Pipe")
-        res = self._source
+        res = self._depinject(self._source)
         for step in self._steps:
-            res = self._depinject(res, step)
+            res = self._depinject(step, res)
         if sink is not _MISSING:
-            res = self._depinject(res, sink)
+            res = self._depinject(sink, res)
         return res
 
-    def _depinject(self, res, step):
-        step_params = [
-            k for k, p in inspect.signature(step).parameters.items()
+    def _depinject(self, stage, res=_MISSING):
+        stage_params = [
+            k for k, p in inspect.signature(stage).parameters.items()
             if p.kind in {inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD}
         ]
-        step_args = []
-        for step_param in step_params:
-            match (step_param, res):
+        stage_args = []
+        for stage_param in stage_params:
+            match (stage_param, res):
+                case (('ix' | 'pipe' | 'res' | 'seq'), _) if res is _MISSING:
+                    raise ValueError(f"{stage!r} is a source and requested a prior step")
                 # Result as-is
                 case ('res', Iterable()):
-                    step_args.append(res)
+                    stage_args.append(res)
                 case ('res', _):
-                    raise TypeError(f"{step!r} requested an iterable and got non-iterable {res!r}")
+                    raise TypeError(f"{stage!r} requested an iterable and got non-iterable {res!r}")
                 # Iterator
                 case ('ix', Iterator()):
-                    step_args.append(res)
+                    stage_args.append(res)
                 case ('ix', Iterable()):
-                    step_args.append(iter(res))
+                    stage_args.append(iter(res))
                 case ('ix', _):
-                    raise TypeError(f"{step!r} requested an iterator and got non-iterable {res!r}")
+                    raise TypeError(f"{stage!r} requested an iterator and got non-iterable {res!r}")
                 # Sequence (list)
                 case ('seq', Sequence()):
-                    step_args.append(res)
+                    stage_args.append(res)
                 case ('seq', Iterable()):
-                    step_args.append(list(res))
+                    stage_args.append(list(res))
                 case ('seq', _):
-                    raise TypeError(f"{step!r} requested a sequence and got non-iterable {res!r}")
+                    raise TypeError(f"{stage!r} requested a sequence and got non-iterable {res!r}")
                 # Pipe
                 case ('pipe', self.__class__()):
-                    step_args.append(res)
+                    stage_args.append(res)
                 case ('pipe', Iterable()):
-                    step_args.append(self.__class__(res))
+                    stage_args.append(self.__class__(res))
                 case ('pipe', _):
-                    raise TypeError(f"{step!r} requested a {self.__class__.__name__} and got non-iterable {res!r}")
+                    raise TypeError(f"{stage!r} requested a {self.__class__.__name__} and got non-iterable {res!r}")
                 # Reference to bare Pipe class
                 case ('cls', _):
-                    step_args.append(self.__class__)
+                    stage_args.append(self.__class__)
                 # Unknown
                 case _:
-                    raise ValueError(f"{step!r} requested an unknown parameter type: {step_param!r}")
-        return step(*step_args)
+                    raise ValueError(f"{stage!r} requested an unknown parameter type: {stage_param!r}")
+        return stage(*stage_args)
 
     ##############################################################
     # Clone an existing Pipe
@@ -206,7 +225,7 @@ class Pipe:
         It's usually unnecessary to call this explicitly unless building
         alternative Pipes from a template Pipe.
         """
-        p = self.__class__(self._source)
+        p = self.__class__._with_source(self._source)
         p._steps = self._steps.copy()
         return p
 
@@ -233,7 +252,9 @@ class Pipe:
 
         See {py:meth}`pathlib.Path.iterdir`.
         """
-        return cls(pathlib.Path(path).iterdir())
+        def pipe_iterdir():
+            return pathlib.Path(path).iterdir()
+        return cls._with_source(pipe_iterdir)
 
     @classonlymethod
     def iterfunc(cls, func, initial):
@@ -272,7 +293,7 @@ class Pipe:
             while True:
                 ret = func(ret)
                 yield ret
-        return cls(pipe_iterfunc())
+        return cls._with_source(pipe_iterfunc)
 
     @classonlymethod
     def randrange(cls, *args, **kwargs):
@@ -304,7 +325,7 @@ class Pipe:
         def pipe_randrange():
             while True:
                 yield random.randrange(start, stop + 1, step)
-        return cls(pipe_randrange())
+        return cls._with_source(pipe_randrange)
 
     @classonlymethod
     def range(cls, *args, **kwargs):
@@ -345,9 +366,13 @@ class Pipe:
         """
         start, stop, step = check_slice_args('range', args, kwargs)
         if stop is None:
-            return cls(itertools.count(start=start, step=step))
-        stop = stop + (1 if step > 0 else -1)
-        return cls(builtins.range(start, stop, step))
+            def pipe_range():
+                return itertools.count(start=start, step=step)
+        else:
+            stop = stop + (1 if step > 0 else -1)
+            def pipe_range():
+                return builtins.range(start, stop, step)
+        return cls._with_source(pipe_range)
 
     @classonlymethod
     def rangetil(cls, *args, **kwargs):
@@ -388,8 +413,12 @@ class Pipe:
         """
         start, stop, step = check_slice_args('rangetil', args, kwargs)
         if stop is None:
-            return cls(itertools.count(start=start, step=step))
-        return cls(builtins.range(start, stop, step))
+            def pipe_rangetil():
+                return itertools.count(start=start, step=step)
+        else:
+            def pipe_rangetil():
+                return builtins.range(start, stop, step)
+        return cls._with_source(pipe_rangetil)
 
     @classonlymethod
     def repeat(cls, value, n=None):
@@ -414,7 +443,9 @@ class Pipe:
         """
         check_int_positive_or_none('n', n)
         src = itertools.repeat(value) if n is None else itertools.repeat(value, times=n)
-        return cls(src)
+        def pipe_repeat():
+            return src
+        return cls._with_source(pipe_repeat)
 
     @classonlymethod
     def repeatfunc(cls, func, *args, **kwargs):
@@ -443,7 +474,7 @@ class Pipe:
         def pipe_repeatfunc():
             while True:
                 yield func(*args, **kwargs)
-        return cls(pipe_repeatfunc())
+        return cls._with_source(pipe_repeatfunc)
 
     @classonlymethod
     def roll(cls, *args):
@@ -482,7 +513,7 @@ class Pipe:
         def pipe_roll():
             while True:
                 yield dice.roll()
-        return cls(pipe_roll())
+        return cls._with_source(pipe_roll)
 
     @classonlymethod
     def unfold(cls, func, seed):
@@ -517,7 +548,7 @@ class Pipe:
                         yield v
                     case _:
                         return
-        return cls(pipe_unfold())
+        return cls._with_source(pipe_unfold)
 
     @classonlymethod
     def walk(
@@ -557,15 +588,17 @@ class Pipe:
         If `children` is a string, as a convenience, it will yield only values
         of matching keys when mappings are encountered.
         """
-        return cls(walk_collection(
-            collection,
-            full_path=full_path,
-            leaves_only=leaves_only,
-            strategy=strategy,
-            max_depth=max_depth,
-            descend=descend,
-            children=children,
-        ))
+        def pipe_walk():
+            return walk_collection(
+                collection,
+                full_path=full_path,
+                leaves_only=leaves_only,
+                strategy=strategy,
+                max_depth=max_depth,
+                descend=descend,
+                children=children,
+            )
+        return cls._with_source(pipe_walk)
 
     @classonlymethod
     def walkdir(cls, path, top_down=True, on_error=None, follow_symlinks=False):
@@ -590,7 +623,7 @@ class Pipe:
                 dp = pathlib.Path(dirpath)
                 dn, fn = cls(dp.iterdir()).partition(lambda p: p.is_dir() and (follow_symlinks or not p.is_symlink()))
                 yield (dp, [p.name for p in dn], [p.name for p in fn])
-        return cls(pipe_walkdir())
+        return cls._with_source(pipe_walkdir)
 
     ##############################################################
     # Create a new Pipe OR modify an existing Pipe
@@ -611,7 +644,9 @@ class Pipe:
             {{pipe_source}} Yield all possible ordered tuples of the elements of
             *iterables*.
             """
-            return cls(itertools.product(*iterables, repeat=repeat))
+            def pipe_cartesian_product():
+                return itertools.product(*iterables, repeat=repeat)
+            return cls._with_source(pipe_cartesian_product)
 
         def _instance(self, repeat=1):
             """
@@ -652,7 +687,9 @@ class Pipe:
             """
             {{pipe_source}} Yield items from each of *iterables*, in order.
             """
-            return cls(itertools.chain(*iterables))
+            def pipe_chain():
+                return itertools.chain(*iterables)
+            return cls._with_source(pipe_chain)
 
         def _instance(self):
             """
@@ -695,14 +732,17 @@ class Pipe:
             {{pipe_source}} Yield cross-wise from each of `iterables`.
             """
             if fair:
-                return cls(itertools.chain.from_iterable(zip(*iterables)))
+                src = itertools.chain.from_iterable(zip(*iterables))
             else:
-                return cls(
+                src = (
                     x for x in itertools.chain.from_iterable(
                         itertools.zip_longest(*iterables, fillvalue=_MISSING)
                     )
                     if x is not _MISSING
                 )
+            def pipe_interleave():
+                return src
+            return cls._with_source(pipe_interleave)
 
         def _instance(self, fair=False):
             """
@@ -734,7 +774,9 @@ class Pipe:
             {{pipe_source}} Yield tuples of unpacked bytes from `buffer` using
             `format`.
             """
-            return cls(struct.iter_unpack(format_, buffer))
+            def pipe_unpack():
+                return struct.iter_unpack(format_, buffer)
+            return cls._with_source(pipe_unpack)
 
         def _instance(self, format_, /):
             """
@@ -783,8 +825,12 @@ class Pipe:
             if fillvalue is not _MISSING:
                 if strict:
                     raise TypeError("'fillvalue' and 'strict' are mutually exclusive")
-                return cls(itertools.zip_longest(*iterables, fillvalue=fillvalue))
-            return cls(builtins.zip(*iterables, strict=strict))
+                def pipe_zip():
+                    return itertools.zip_longest(*iterables, fillvalue=fillvalue)
+            else:
+                def pipe_zip():
+                    return builtins.zip(*iterables, strict=strict)
+            return cls._with_source(pipe_zip)
 
         def _instance(self, fillvalue=_MISSING, strict=False):
             """
