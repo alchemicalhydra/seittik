@@ -37,7 +37,15 @@ def test_pipe_missing_source():
 
 
 ########################################################################
-# Bad step/sink params
+# Bad stage params
+
+def test_pipe_bad_source_param():
+    def bad_source(res):
+        pass
+    p = Pipe._with_source(bad_source)
+    with pytest.raises(ValueError):
+        list(p)
+
 
 def test_pipe_bad_step_param_unknown():
     p = Pipe(3)
