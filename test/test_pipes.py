@@ -326,6 +326,30 @@ def test_pipe_source_randrange(random_seed_0):
     assert list(p.take(5)) == [4, 4, 1, 3, 5]
 
 
+# Pipe.randfloat
+
+def test_pipe_source_randfloat_0_1(random_seed_0):
+    p = Pipe.randfloat()
+    assert list(p.take(5)) == pytest.approx([
+        0.8444218515250481,
+        0.7579544029403025,
+        0.420571580830845,
+        0.25891675029296335,
+        0.5112747213686085,
+    ])
+
+
+def test_pipe_source_randfloat_13_101(random_seed_0):
+    p = Pipe.randfloat(13, 101)
+    assert list(p.take(5)) == pytest.approx([
+        87.30912293420424,
+        79.69998745874662,
+        50.01029911311436,
+        35.784674025780774,
+        57.99217548043755,
+    ])
+
+
 # Pipe.range
 
 def test_pipe_source_range_finite():

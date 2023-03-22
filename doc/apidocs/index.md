@@ -38,6 +38,7 @@ seittik.pipes.Pipe.walkdir
 ### Sources: Random
 
 ```{autodoc2-summary}
+seittik.pipes.Pipe.randfloat
 seittik.pipes.Pipe.randrange
 seittik.pipes.Pipe.roll
 ```

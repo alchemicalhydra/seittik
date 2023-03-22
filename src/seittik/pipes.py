@@ -367,6 +367,28 @@ class Pipe:
         return cls._with_source(pipe_iterfunc)
 
     @classonlymethod
+    def randfloat(cls, a=0, b=1, /):
+        """
+        {{pipe_source}} Yield uniform random floats between `a` and `b`.
+
+        If `a` and `b` are omitted, they default to `0` and `1`.
+
+        `b` is not guaranteed to ever be a result (i.e., the range should be
+        considered as `[a, b)`.
+
+        Contrast with {py:meth}`Pipe.randrange`, which yields discrete integers
+        within a closed range.
+        """
+        def pipe_randfloat(rng):
+            if a == 0 and b == 1:
+                while True:
+                    yield rng.random()
+            else:
+                while True:
+                    yield rng.uniform(a, b)
+        return cls._with_source(pipe_randfloat)
+
+    @classonlymethod
     def randrange(cls, *args, **kwargs):
         """
         {{pipe_source}} Yield random integers from a given range.
@@ -391,6 +413,9 @@ class Pipe:
         [ randrange(1, 6) ]
         -4-4-1-3-5-------->
         ```
+
+        Contrast with {py:meth}`Pipe.randfloat`, which yields floating-point
+        numbers.
         """
         start, stop, step = check_slice_args('range', args, kwargs)
         def pipe_randrange(rng):
