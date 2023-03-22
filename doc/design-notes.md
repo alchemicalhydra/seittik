@@ -292,6 +292,14 @@ These create a new source.
 I felt the term "iterate" was too similar to {py-builtins}`iter` and the
 Python concept of iteration in general.
 
+#### {py:meth}`.randfloat() <seittik.pipes.Pipe.randfloat>`
+
+- {py-random}`random`
+- {py-random}`uniform`
+
+Acts like {external:py:func}`random.random` without arguments, and
+{external:py:func}`random.uniform` with them.
+
 #### {py:meth}`.randrange() <seittik.pipes.Pipe.randrange>`
 
 - {py-random}`randint`
@@ -601,12 +609,6 @@ internally.
 - {hs-data-list}`permutations`
 - {py-itertools}`permutations`
 
-#### {py:meth}`.random_permutations() <seittik.pipes.Pipe.random_permutations>`
-
-- {py-more-itertools}`random_permutation`
-
-I'm torn on whether I should merge this into `permutations` via a flag.
-
 #### {py:meth}`.reject() <seittik.pipes.Pipe.reject>`
 
 - {clj-core}`remove`
@@ -640,6 +642,20 @@ I prefer verb names over adjectives.
 - {kt-collections}`runningReduce`
 - {kt-collections}`scan`
 - {py-itertools}`accumulate`
+
+#### {py:meth}`.sample() <seittik.pipes.Pipe.sample>`
+
+- {py-more-itertools}`random_permutation`
+- {py-random}`choices`
+- {py-random}`sample`
+- {py-random}`shuffle`
+
+Supports arbitrary sample sizes both with, and without, replacement.
+
+Without arguments, equivalent to yielding a shuffle.
+
+A random permutation and a random sample (without replacement) are
+actually the same thing.
 
 #### {py:meth}`.slice() <seittik.pipes.Pipe.slice>`
 
@@ -956,6 +972,13 @@ and others return the false set first.
 - {py-math}`prod`
 
 Not to be confused with {py:meth}`Pipe.cartesian_product`.
+
+#### {py:meth}`.shuffle() <seittik.pipes.Pipe.shuffle>`
+
+- {py-random}`shuffle`
+
+{py:meth}`Pipe.sample` is more flexible, but sometimes all you want is a
+single shuffle.
 
 #### {py:meth}`.stdev() <seittik.pipes.Pipe.stdev>`
 
