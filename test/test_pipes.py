@@ -206,6 +206,76 @@ def test_pipe_cache():
 
 
 ########################################################################
+# Random number generation setup
+
+def test_pipe_rng_str_shared():
+    import random
+    from seittik.utils.randutils import SharedRandom
+    p1 = Pipe([1, 2, 3], rng='shared')
+    assert isinstance(p1._rng, SharedRandom)
+    p2 = Pipe([1, 2, 3], rng='shared')
+    assert isinstance(p2._rng, SharedRandom)
+    assert p1._rng is p2._rng
+
+
+def test_pipe_rng_str_pseudo():
+    import random
+    p = Pipe([1, 2, 3], rng='pseudo')
+    assert isinstance(p._rng, random.Random)
+    assert not isinstance(p._rng, random.SystemRandom)
+
+
+def test_pipe_rng_str_crypto():
+    import random
+    p = Pipe([1, 2, 3], rng='crypto')
+    assert isinstance(p._rng, random.Random)
+    assert isinstance(p._rng, random.SystemRandom)
+
+
+def test_pipe_rng_str_invalid():
+    import random
+    with pytest.raises(ValueError):
+        Pipe([1, 2, 3], rng='invalid')
+
+
+def test_pipe_rng_other_invalid():
+    import random
+    with pytest.raises(TypeError):
+        Pipe([1, 2, 3], rng=13)
+
+
+def test_pipe_rng_random_subclass():
+    import random
+    class FooRandom(random.Random):
+        pass
+    p = Pipe([1, 2, 3], rng=FooRandom())
+    assert isinstance(p._rng, random.Random)
+    assert not isinstance(p._rng, random.SystemRandom)
+
+
+def test_pipe_rng_reset():
+    import random
+    from seittik.utils.randutils import SharedRandom, SHARED_RANDOM
+    p = Pipe([1, 2, 3], rng='pseudo')
+    assert isinstance(p._rng, random.Random)
+    assert p._rng is not SHARED_RANDOM
+    old_rng = p._rng
+    # Reset
+    p = p.set_rng()
+    assert p._rng is SHARED_RANDOM
+    assert p._rng is not old_rng
+
+
+def test_pipe_rng_seed():
+    p1 = Pipe.randrange(1, 6, rng='pseudo').seed_rng(0)
+    assert list(p1.take(5)) == [4, 4, 1, 3, 5]
+    p2 = Pipe.randrange(1, 6, rng='pseudo').seed_rng(1)
+    assert list(p2.take(5)) == [2, 5, 1, 3, 1]
+    assert list(p1.take(5)) == [4, 4, 4, 6, 4]
+    assert list(p2.take(5)) == [2, 1, 4, 1, 4]
+
+
+########################################################################
 # Sources
 
 # Pipe.iterfunc

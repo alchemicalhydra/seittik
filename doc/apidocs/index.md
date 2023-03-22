@@ -124,6 +124,13 @@ seittik.pipes.Pipe.peek
 seittik.pipes.Pipe.tap
 ```
 
+### Steps: RNG Control
+
+```{autodoc2-summary}
+seittik.pipes.Pipe.set_rng
+seittik.pipes.Pipe.seed_rng
+```
+
 ### Sinks: Collections
 
 ```{autodoc2-summary}

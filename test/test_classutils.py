@@ -62,16 +62,20 @@ def test_lazyattr():
     foo1 = Foo()
     assert foo1.bar == 3
     assert check == [1]
-    assert foo1.bar == 3
+    foo1.bar = 5
+    assert foo1.bar == 5
     assert check == [1]
     del foo1.bar
+    assert foo1.bar == 3
+    assert check == [1, 1]
+    del foo1.bar
     del foo1.bar
     assert foo1.bar == 3
-    assert check == [1, 1]
+    assert check == [1, 1, 1]
     assert foo1.bar == 3
-    assert check == [1, 1]
+    assert check == [1, 1, 1]
     foo2 = Foo()
     assert foo2.bar == 3
-    assert check == [1, 1, 1]
+    assert check == [1, 1, 1, 1]
     assert foo2.bar == 3
-    assert check == [1, 1, 1]
+    assert check == [1, 1, 1, 1]

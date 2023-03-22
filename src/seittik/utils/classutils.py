@@ -113,6 +113,9 @@ class lazyattr:
             self._cache[instance] = v
         return v
 
+    def __set__(self, instance, value):
+        self._cache[instance] = value
+
     def __delete__(self, instance):
         try:
             del self._cache[instance]
