@@ -303,7 +303,7 @@ Like {py:meth}`Pipe.range`, this is *inclusive* of the upper bound.
 
 - {clj-core}`range`
 - {js-fxts}`range`
-- {py-builtins-func}`range`
+- {py-builtins}`func-range`
 - {py-itertools}`count`
 
 Since including the upper bound is such a common scenario, two variants
@@ -695,7 +695,7 @@ container.
 
 #### {py:meth}`.bytes() <seittik.pipes.Pipe.bytes>`
 
-- {py-builtins-func}`bytes`
+- {py-builtins}`func-bytes`
 
 #### {py:meth}`.deque() <seittik.pipes.Pipe.deque>`
 
@@ -703,25 +703,25 @@ container.
 
 #### {py:meth}`.dict() <seittik.pipes.Pipe.dict>`
 
-- {py-builtins-func}`dict`
+- {py-builtins}`func-dict`
 
 #### {py:meth}`.list() <seittik.pipes.Pipe.list>`
 
-- {py-builtins-func}`list`
+- {py-builtins}`func-list`
 
 #### {py:meth}`.set() <seittik.pipes.Pipe.set>`
 
 - {clj-core}`set`
-- {py-builtins-func}`set`
+- {py-builtins}`func-set`
 
 #### {py:meth}`.str() <seittik.pipes.Pipe.str>`
 
 - {js-fxts}`join`
-- {py-builtins-func}`str`
+- {py-builtins}`func-str`
 
 #### {py:meth}`.tuple() <seittik.pipes.Pipe.tuple>`
 
-- {py-builtins-func}`tuple`
+- {py-builtins}`func-tuple`
 
 ### Pipe: Sinks: non-containers
 
@@ -734,7 +734,7 @@ These are all other terminal transformations of a pipe.
 - {js-fxts}`every`
 - {js-ramda}`all`
 - {py-builtins}`all`
-- {rb-enumerable-qm}`all`
+- {rb-enumerable}`all?`
 
 #### {py:meth}`.any() <seittik.pipes.Pipe.any>`
 
@@ -742,7 +742,7 @@ These are all other terminal transformations of a pipe.
 - {js-fxts}`some`
 - {js-ramda}`any`
 - {py-builtins}`any`
-- {rb-enumerable-qm}`any`
+- {rb-enumerable}`any?`
 
 #### {py:meth}`.contains() <seittik.pipes.Pipe.contains>`
 

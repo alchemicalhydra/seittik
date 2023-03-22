@@ -1,8 +1,10 @@
 # Sphinx master config file
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+from collections.abc import Callable
 from datetime import date
 from functools import wraps
+import re
 
 from docutils.parsers.rst import directives
 
@@ -30,7 +32,6 @@ extensions = [
     'IPython.sphinxext.ipython_directive',
     'myst_parser',
     'sphinx.ext.doctest',
-    'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx',
     'sphinxcontrib_dooble',
     'sphinxcontrib.mermaid',
@@ -71,31 +72,50 @@ html_context = {
 
 
 ########################################################################
-# Extlinks
+# xlinks
 
-extlinks = {
-    'clj-core': ('https://clojure.github.io/clojure/clojure.core-api.html#clojure.core/%s', "Clojure core: %s"),
-    'clj-medley': ('http://weavejester.github.io/medley/medley.core.html#var-%s', "Clojure Medley: %s"),
-    'hs-data-list': ('https://hackage.haskell.org/package/base/docs/Data-List.html#v:%s', "Haskell Data.List: %s"),
-    'js-fxts': ('https://fxts.dev/docs/%s', "JavaScript: FxTS: %s"),
-    'js-lfi': ('https://github.com/TomerAberbach/lfi/blob/main/docs/modules.md#%s', "JavaScript: lfi: %s"),
-    'js-ramda': ('https://ramdajs.com/docs/#%s', "JavaScript: Ramda: %s"),
-    'py-array': ('https://docs.python.org/3/library/array.html#array.%s', "Python array: %s"),
-    'py-builtins': ('https://docs.python.org/3/library/functions.html#%s', "Python builtins: %s"),
-    # Hack because extlinks isn't very flexible
-    'py-builtins-func': ('https://docs.python.org/3/library/functions.html#func-%s', "Python builtins: %s"),
-    'py-collections': ('https://docs.python.org/3/library/collections.html#collections.%s', "Python collections: %s"),
-    'py-functools': ('https://docs.python.org/3/library/functools.html#functools.%s', "Python functools: %s"),
-    'py-itertools': ('https://docs.python.org/3/library/itertools.html#itertools.%s', "Python itertools: %s"),
-    'py-math': ('https://docs.python.org/3/library/math.html#math.%s', "Python math: %s"),
-    'py-more-itertools': ('https://more-itertools.readthedocs.io/en/stable/api.html#more_itertools.%s', "Python more-itertools: %s"),
-    'py-pathlib': ('https://docs.python.org/3/library/pathlib.html#pathlib.%s', "Python pathlib: %s"),
-    'py-random': ('https://docs.python.org/3/library/random.html#random.%s', "Python random: %s"),
-    'py-statistics': ('https://docs.python.org/3/library/statistics.html#statistics.%s', "Python statistics: %s"),
-    'py-struct': ('https://docs.python.org/3/library/struct.html#struct.%s', "Python struct: %s"),
-    'rb-enumerable': ('https://ruby-doc.org/3.2.1/Enumerable.html#method-i-%s', "Ruby Enumerable: %s"),
-    # Hack because extlinks isn't very flexible
-    'rb-enumerable-qm': ('https://ruby-doc.org/3.2.1/Enumerable.html#method-i-%s-3F', "Ruby Enumerable: %s?"),
+def _fix_kt(format_url, format_caption):
+    def _cb_url(v):
+        repl = re.sub(r'[A-Z]', lambda m: f"-{m[0].lower()}", v)
+        return format_url.format(v=repl)
+    return (_cb_url, format_caption)
+
+
+def _fix_py_builtins(format_url, format_caption):
+    def _cb_caption(v):
+        repl = re.sub(r'^func-', '', v)
+        return format_caption.format(v=repl)
+    return (format_url, _cb_caption)
+
+
+def _fix_rb(format_url, format_caption):
+    def _cb_url(v):
+        repl = re.sub(r'\?$', '-3F', v)
+        return format_url.format(v=repl)
+    return (_cb_url, format_caption)
+
+
+xlinks = {
+    'clj-core': ('https://clojure.github.io/clojure/clojure.core-api.html#clojure.core/{v}', "Clojure core: {v}"),
+    'clj-medley': ('http://weavejester.github.io/medley/medley.core.html#var-{v}', "Clojure Medley: {v}"),
+    'hs-data-list': ('https://hackage.haskell.org/package/base/docs/Data-List.html#v:{v}', "Haskell Data.List: {v}"),
+    'js-fxts': ('https://fxts.dev/docs/{v}', "JavaScript: FxTS: {v}"),
+    'js-lfi': ('https://github.com/TomerAberbach/lfi/blob/main/docs/modules.md#{v}', "JavaScript: lfi: {v}"),
+    'js-ramda': ('https://ramdajs.com/docs/#{v}', "JavaScript: Ramda: {v}"),
+    'kt-collections': _fix_kt('https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/{v}.html', "Kotlin collections: {v}"),
+    'kt-sequences': _fix_kt('https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.sequences/{v}.html', "Kotlin sequences: {v}"),
+    'py-array': ('https://docs.python.org/3/library/array.html#array.{v}', "Python array: {v}"),
+    'py-builtins': _fix_py_builtins('https://docs.python.org/3/library/functions.html#{v}', "Python builtins: {v}"),
+    'py-collections': ('https://docs.python.org/3/library/collections.html#collections.{v}', "Python collections: {v}"),
+    'py-functools': ('https://docs.python.org/3/library/functools.html#functools.{v}', "Python functools: {v}"),
+    'py-itertools': ('https://docs.python.org/3/library/itertools.html#itertools.{v}', "Python itertools: {v}"),
+    'py-math': ('https://docs.python.org/3/library/math.html#math.{v}', "Python math: {v}"),
+    'py-more-itertools': ('https://more-itertools.readthedocs.io/en/stable/api.html#more_itertools.{v}', "Python more-itertools: {v}"),
+    'py-pathlib': ('https://docs.python.org/3/library/pathlib.html#pathlib.{v}', "Python pathlib: {v}"),
+    'py-random': ('https://docs.python.org/3/library/random.html#random.{v}', "Python random: {v}"),
+    'py-statistics': ('https://docs.python.org/3/library/statistics.html#statistics.{v}', "Python statistics: {v}"),
+    'py-struct': ('https://docs.python.org/3/library/struct.html#struct.{v}', "Python struct: {v}"),
+    'rb-enumerable': _fix_rb('https://ruby-doc.org/3.2.1/Enumerable.html#method-i-{v}', "Ruby Enumerable: {v}"),
 }
 
 
@@ -246,7 +266,47 @@ _monkey_patch_dooble()
 
 
 ########################################################################
+# xlinks (replacement for underpowered extlinks)
+
+def make_xlink_role(name, url, caption):
+    import docutils.nodes
+    import docutils.utils
+    import sphinx.util.nodes
+    def role(typ, rawtext, text, lineno, inliner, options={}, content=[]):
+        text = docutils.utils.unescape(text)
+        has_explicit_title, title, part = sphinx.util.nodes.split_explicit_title(text)
+        match url:
+            case Callable():
+                full_url = url(part)
+            case str():
+                full_url = url.format(v=part)
+            case _:
+                raise TypeError(f"Invalid xlink url for {name!r}: {url!r}")
+        match (has_explicit_title, caption):
+            case (False, Callable()):
+                title = caption(part)
+            case (False, str()):
+                title = caption.format(v=part)
+            case (False, None):
+                title = full_url
+            case (True, _):
+                pass
+            case _:
+                raise TypeError(f"Invalid xlink caption for {name!r}: {caption!r}")
+        pnode = docutils.nodes.reference(title, title, internal=False, refuri=full_url)
+        return [pnode], []
+    return role
+
+
+def setup_xlink_roles(app):
+    for name, (url, caption) in app.config.xlinks.items():
+        app.add_role(name, make_xlink_role(name, url, caption))
+
+
+########################################################################
 # Setup
 
 def setup(app):
     app.add_config_value('ipython_reset_history', False, 'env')
+    app.add_config_value('xlinks', {}, 'env')
+    app.connect('builder-inited', setup_xlink_roles)
