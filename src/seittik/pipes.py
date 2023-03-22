@@ -2042,6 +2042,19 @@ class Pipe:
         return self._evaluate(sink=pipe_product)
 
     @partialclassmethod
+    def shuffle(self):
+        """
+        {{pipe_sink}} Return a new shuffled list from this Pipe's items.
+
+        Compare with {py:meth}`Pipe.sample`, which can yield repeated shuffles.
+        """
+        def pipe_shuffle(mutseq, rng):
+            ret = mutseq.copy()
+            rng.shuffle(ret)
+            return ret
+        return self._evaluate(sink=pipe_shuffle)
+
+    @partialclassmethod
     def stdev(self, sample=False, mean=None):
         """
         {{pipe_sink}} Return the standard deviation of the Pipe's items.

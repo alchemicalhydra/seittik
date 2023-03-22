@@ -1371,6 +1371,13 @@ def test_pipe_sink_product():
     assert p.product() == 120
 
 
+# Pipe.shuffle
+
+def test_pipe_step_shuffle(random_seed_0):
+    p = Pipe('abcdef')
+    assert list(p.shuffle()) == ['e', 'c', 'b', 'a', 'f', 'd']
+
+
 # Pipe.stdev
 
 def test_pipe_sink_stdev_population():

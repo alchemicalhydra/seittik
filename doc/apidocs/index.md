@@ -149,7 +149,7 @@ seittik.pipes.Pipe.str
 seittik.pipes.Pipe.tuple
 ```
 
-### Sinks: Math/Statistics
+### Sinks: Math/Randomness/Statistics
 
 ```{autodoc2-summary}
 seittik.pipes.Pipe.frequencies
@@ -160,6 +160,7 @@ seittik.pipes.Pipe.min
 seittik.pipes.Pipe.minmax
 seittik.pipes.Pipe.mode
 seittik.pipes.Pipe.product
+seittik.pipes.Pipe.shuffle
 seittik.pipes.Pipe.stdev
 seittik.pipes.Pipe.sum
 seittik.pipes.Pipe.variance
