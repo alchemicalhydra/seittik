@@ -375,6 +375,7 @@ multiplication.
 - {clj-medley}`join`
 - {hs-data-list}`concat`
 - {js-ramda}`unnest`
+- {kt-collections}`flatten`
 - {py-itertools}`chain`
 
 For a more powerful variant, see {py:meth}`Pipe.flatten`.
@@ -399,6 +400,7 @@ For a more powerful variant, see {py:meth}`Pipe.flatten`.
 - {js-fxts}`zip`
 - {js-ramda}`zip`
 - {py-builtins}`zip`
+- {rb-enumerable}`zip`
 
 This works as an `unzip`, too, so there's no need for a separate method.
 
@@ -432,6 +434,8 @@ value via an identity function (such as a naked shear).
 - {js-lfi}`chunked`
 - {js-lfi}`windowed`
 - {js-ramda}`splitEvery`
+- {kt-collections}`chunked`
+- {kt-collections}`windowed`
 - {py-itertools}`pairwise` (`n=2` only, `step=1` only)
 - {py-more-itertools}`chunked`
 - {py-more-itertools}`grouper` (`itertools` recipe)
@@ -441,6 +445,8 @@ value via an identity function (such as a naked shear).
 - {py-more-itertools}`triplewise` (`n=3` only, `step=1` only;
   `itertools` recipe)
 - {py-more-itertools}`windowed`
+- {rb-enumerable}`each_cons` (`step=1` only)
+- {rb-enumerable}`each_slice` (`step=n` only)
 
 One chunker to rule them all.
 
@@ -460,7 +466,7 @@ Groups adjacent elements into tuples.
 
 I felt both the name and behavior of `itertools.groupby` were confusing
 and not as useful to work with; this `Pipe` step simply yields tuples of
-adjacent items with matching keys.
+adjacent items that have matching keys, without yielding the keys.
 
 For behavior that groups all elements by a key function regardless of
 their position in the source, see {py:meth}`Pipe.groupby`.
@@ -481,6 +487,7 @@ I saw no reason to keep these as separate functions.
 - {js-lfi}`cycle`
 - {py-itertools}`cycle`
 - {py-more-itertools}`ncycles` (`itertools` recipe)
+- {rb-enumerable}`cycle`
 
 #### {py:meth}`.debug() <seittik.pipes.Pipe.debug>`
 
@@ -511,6 +518,8 @@ labeled.
 - {js-fxts}`drop`
 - {js-lfi}`drop`
 - {js-ramda}`drop`
+- {kt-collections}`drop`
+- {rb-enumerable}`drop`
 
 #### {py:meth}`.dropwhile() <seittik.pipes.Pipe.dropwhile>`
 
@@ -519,12 +528,15 @@ labeled.
 - {js-fxts}`dropWhile`
 - {js-lfi}`dropWhile`
 - {js-ramda}`dropWhile`
+- {kt-collections}`dropWhile`
+- {rb-enumerable}`drop_while`
 
 #### {py:meth}`.enumerate() <seittik.pipes.Pipe.enumerate>`
 
 - {clj-medley}`indexed`
 - {js-fxts}`zipWithIndex`
 - {py-builtins}`enumerate`
+- {rb-enumerable}`each_with_index`
 
 #### {py:meth}`.enumerate_info() <seittik.pipes.Pipe.enumerate_info>`
 
@@ -540,7 +552,9 @@ if we're dealing with the first and/or last item.
 - {js-fxts}`filter`
 - {js-lfi}`filter`
 - {js-ramda}`filter`
+- {kt-collections}`filter`
 - {py-builtins}`filter`
+- {rb-enumerable}`find_all`
 
 #### {py:meth}`.flatten() <seittik.pipes.Pipe.flatten>`
 
@@ -570,7 +584,9 @@ Sequence goes in, labeled `dict` comes out.
 - {hs-data-list}`map`
 - {js-fxts}`map`
 - {js-ramda}`map`
+- {kt-collections}`map`
 - {py-builtins}`map`
+- {rb-enumerable}`collect`
 
 #### {py:meth}`.peek() <seittik.pipes.Pipe.peek>`
 
@@ -596,7 +612,9 @@ I'm torn on whether I should merge this into `permutations` via a flag.
 - {clj-core}`remove`
 - {js-fxts}`reject`
 - {js-ramda}`reject`
+- {kt-collections}`filterNot`
 - {py-itertools}`filterfalse`
+- {rb-enumerable}`reject`
 
 `reject` feels like a cleaner name than `filterfalse`.
 
@@ -605,7 +623,9 @@ I'm torn on whether I should merge this into `permutations` via a flag.
 - {clj-core}`reverse`
 - {hs-data-list}`reverse`
 - {js-fxts}`reverse`
+- {kt-collections}`reversed`
 - {py-builtins}`reversed`
+- {rb-enumerable}`reverse_each`
 
 I prefer verb names over adjectives.
 
@@ -616,6 +636,9 @@ I prefer verb names over adjectives.
 - {hs-data-list}`scanl1`
 - {js-fxts}`scan`
 - {js-ramda}`scan`
+- {kt-collections}`runningFold`
+- {kt-collections}`runningReduce`
+- {kt-collections}`scan`
 - {py-itertools}`accumulate`
 
 #### {py:meth}`.slice() <seittik.pipes.Pipe.slice>`
@@ -623,6 +646,7 @@ I prefer verb names over adjectives.
 - {clj-core}`take-nth` (using `step`)
 - {js-fxts}`slice`
 - {js-ramda}`slice`
+- {kt-collections}`slice`
 - {py-itertools}`islice`
 
 #### {py:meth}`.sort() <seittik.pipes.Pipe.sort>`
@@ -635,7 +659,13 @@ I prefer verb names over adjectives.
 - {js-fxts}`sortBy`
 - {js-ramda}`sort`
 - {js-ramda}`sortBy`
+- {kt-collections}`sorted`
+- {kt-collections}`sortedBy`
+- {kt-collections}`sortedByDescending`
+- {kt-collections}`sortedDescending`
 - {py-builtins}`sorted`
+- {rb-enumerable}`sort`
+- {rb-enumerable}`sort_by`
 
 I prefer verb names over adjectives.
 
@@ -649,7 +679,9 @@ I prefer verb names over adjectives.
 - {js-fxts}`take`
 - {js-lfi}`take`
 - {js-ramda}`take`
+- {kt-collections}`take`
 - {py-more-itertools}`take` (`itertools` recipe)
+- {rb-enumerable}`take`
 
 #### {py:meth}`.takewhile() <seittik.pipes.Pipe.takewhile>`
 
@@ -658,7 +690,9 @@ I prefer verb names over adjectives.
 - {js-fxts}`takeWhile`
 - {js-lfi}`takeWhile`
 - {js-ramda}`takeWhile`
+- {kt-collections}`takeWhile`
 - {py-itertools}`takewhile`
+- {rb-enumerable}`take_while`
 
 #### {py:meth}`.tap() <seittik.pipes.Pipe.tap>`
 
@@ -667,6 +701,8 @@ I prefer verb names over adjectives.
 - {js-fxts}`peek`
 - {js-fxts}`tap`
 - {js-ramda}`tap`
+- {kt-collections}`forEach`
+- {kt-collections}`onEach`
 
 #### {py:meth}`.unique() <seittik.pipes.Pipe.unique>`
 
@@ -679,7 +715,10 @@ I prefer verb names over adjectives.
 - {js-lfi}`unique`
 - {js-ramda}`uniq`
 - {js-ramda}`uniqBy`
+- {kt-collections}`distinct`
+- {kt-collections}`distinctBy`
 - {py-more-itertools}`unique_everseen` (`itertools` recipe)
+- {rb-enumerable}`uniq`
 
 Not to be confused with `depeat`, which only removes *consecutive*
 duplicates.
@@ -733,6 +772,7 @@ These are all other terminal transformations of a pipe.
 - {hs-data-list}`all`
 - {js-fxts}`every`
 - {js-ramda}`all`
+- {kt-collections}`all`
 - {py-builtins}`all`
 - {rb-enumerable}`all?`
 
@@ -741,6 +781,7 @@ These are all other terminal transformations of a pipe.
 - {hs-data-list}`any`
 - {js-fxts}`some`
 - {js-ramda}`any`
+- {kt-collections}`any`
 - {py-builtins}`any`
 - {rb-enumerable}`any?`
 
@@ -748,14 +789,18 @@ These are all other terminal transformations of a pipe.
 
 - {clj-core}`contains?` (not quite?)
 - {hs-data-list}`elem`
+- {kt-collections}`contains`
+- {rb-enumerable}`member?`
 
 #### {py:meth}`.count() <seittik.pipes.Pipe.count>`
 
 - {clj-core}`count`
 - {hs-data-list}`length`
 - {js-fxts}`size`
+- {kt-collections}`count`
 - {py-builtins}`len`
 - {py-more-itertools}`ilen`
+- {rb-enumerable}`count`
 
 I went with SQL's `COUNT` as the most intuitive name, since we're
 effectively counting items "as they go by".
@@ -782,7 +827,10 @@ partially consume it; use {py:meth}`Pipe.drop` for that.
 - {js-lfi}`fold`
 - {js-lfi}`reduce`
 - {js-ramda}`reduce`
+- {kt-collections}`fold`
+- {kt-collections}`reduce`
 - {py-functools}`reduce`
+- {rb-enumerable}`inject`
 
 This name just comes down to subjective preference.
 
@@ -790,12 +838,14 @@ This name just comes down to subjective preference.
 
 - {clj-core}`frequencies`
 - {py-collections}`Counter`
+- {rb-enumerable}`tally`
 
 #### {py:meth}`.groupby() <seittik.pipes.Pipe.groupby>`
 
 - {clj-core}`group-by`
 - {js-fxts}`groupBy`
 - {js-ramda}`groupBy`
+- {rb-enumerable}`group_by`
 
 This is akin to SQL's `GROUP BY`, and *not* like `itertools.groupby`.
 
@@ -817,12 +867,19 @@ For behavior that only groups adjacent elements, see
 - {js-lfi}`maxBy`
 - {js-ramda}`max`
 - {js-ramda}`maxBy`
+- {kt-collections}`max`
+- {kt-collections}`maxBy`
+- {kt-collections}`maxByOrNull`
+- {kt-collections}`maxOrNull`
 - {py-builtins}`max`
+- {rb-enumerable}`max`
+- {rb-enumerable}`max_by`
 
 #### {py:meth}`.mean() <seittik.pipes.Pipe.mean>`
 
 - {js-fxts}`average`
 - {js-ramda}`mean`
+- {kt-collections}`average`
 - {py-statistics}`mean`
 
 #### {py:meth}`.median() <seittik.pipes.Pipe.median>`
@@ -841,13 +898,21 @@ For behavior that only groups adjacent elements, see
 - {js-lfi}`minBy`
 - {js-ramda}`min`
 - {js-ramda}`minBy`
+- {kt-collections}`min`
+- {kt-collections}`minBy`
+- {kt-collections}`minByOrNull`
+- {kt-collections}`minOrNull`
 - {py-builtins}`min`
+- {rb-enumerable}`min`
+- {rb-enumerable}`min_by`
 
 #### {py:meth}`.minmax() <seittik.pipes.Pipe.minmax>`
 
 - {js-lfi}`minmax`
 - {js-lfi}`minmaxby`
 - {py-more-itertools}`minmax`
+- {rb-enumerable}`minmax`
+- {rb-enumerable}`minmax_by`
 
 #### {py:meth}`.mode() <seittik.pipes.Pipe.mode>`
 
@@ -856,12 +921,17 @@ For behavior that only groups adjacent elements, see
 #### {py:meth}`.none() <seittik.pipes.Pipe.none>`
 
 - {js-ramda}`none`
+- {kt-collections}`none`
+- {rb-enumerable}`none?`
 
 #### {py:meth}`.nth() <seittik.pipes.Pipe.nth>`
 
 - {clj-core}`nth`
 - {js-fxts}`nth`
 - {js-ramda}`nth`
+- {kt-collections}`elementAt`
+- {kt-collections}`elementAtOrElse`
+- {kt-collections}`elementAtOrNull`
 - {py-more-itertools}`nth` (`itertools` recipe)
 
 #### {py:meth}`.pack() <seittik.pipes.Pipe.pack>`
@@ -873,7 +943,9 @@ For behavior that only groups adjacent elements, see
 - {hs-data-list}`partition`
 - {js-fxts}`partition`
 - {js-ramda}`partition`
+- {kt-collections}`partition`
 - {py-more-itertools}`partition` (`itertools` recipe)
+- {rb-enumerable}`partition`
 
 It drives me crazy that some implementations return the true list first,
 and others return the false set first.
@@ -899,7 +971,9 @@ single method via a flag, with population being the default.
 
 - {hs-data-list}`sum`
 - {js-fxts}`sum`
+- {kt-collections}`sum`
 - {py-builtins}`sum`
+- {rb-enumerable}`sum`
 
 #### {py:meth}`.variance() <seittik.pipes.Pipe.variance>`
 
