@@ -3,6 +3,33 @@
 For full details, see the [commit
 history](https://github.com/alchemicalhydra/seittik/commits/master).
 
+## 2023.03.2 (2023-03-22)
+
+- `Pipe` now supports pluggable random number generators (RNGs), along
+  with two new methods:
+  - `Pipe.set_rng`
+  - `Pipe.seed_rng`
+- The internal stage evaluation protocol was further improved:
+  - The internal `Pipe` step/sink evaluation protocol was extended to
+    sources as well.
+  - "Stages" is the new collective term for sources, steps, and sinks.
+  - The internal `Pipe` stage evaluation protocol now supports mutable
+    sequences as distinct from normal sequences.
+  - The internal `Pipe` stage evaluation protocol now supports requesting
+    the Pipe's RNG via dependency injection.
+- A new source, `Pipe.randfloat`, was added.
+- A new sink, `Pipe.shuffle`, was added.
+- The `Pipe.random_permutations` step was refactored into `Pipe.sample`.
+- Various statistical and set-theory Pipe methods had their `r` parameters
+  renamed to `k`.
+- The cross-references section of the Design Notes was further fleshed
+  out.
+- The `sphinx.ext.extlinks` Sphinx extension was replaced with one of our
+  own that allows for more flexibility in massaging URLs and captions.
+- The `Pipe.zip` documentation saw a minor correction.
+- Nox was set up for multi-version testing.
+- Development dependencies were updated.
+
 ## 2023.03.1 (2023-03-20)
 
 - The internal step/sink evaluation protocol is greatly improved.
