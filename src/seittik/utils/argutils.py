@@ -63,29 +63,31 @@ def check_int_positive_or_none(name, value):
     check_int_positive(name, value)
 
 
-def check_r_args(name, r, default=_MISSING):
+def check_k_args(name, k, default=_MISSING):
     """
-    Check `r` for a non-negative integer range.
+    Check `k` for a non-negative integer range.
 
-    `r` may be a non-negative integer, representing both `r_min` and
-    `r_max`, or a `(r_min, r_max)` tuple.
+    `k` may be a non-negative integer, representing both `k_min` and
+    `k_max`, or a `(k_min, k_max)` tuple.
 
-    If `r` is `None` and `default` is provided as a non-negative integer,
-    `default` will be used in place of `r`.
+    If `k` is `None` and `default` is provided as a non-negative integer,
+    `default` will be used in place of `k`.
 
-    Return `(r_min, r_max)`.
+    Return `(k_min, k_max)`.
+
+    (The variable name `k` comes from statistics and set theory.)
     """
-    match r:
+    match k:
         case int():
-            check_int_zero_or_positive(name, r)
-            return (r, r)
+            check_int_zero_or_positive(name, k)
+            return (k, k)
         case (int() as a, int() as b) if b >= a:
             check_int_zero_or_positive(f"{name}[0]", a)
             check_int_zero_or_positive(f"{name}[1]", b)
             return (a, b)
         case (int() as a, int() as b):
             raise ValueError(
-                f"{name!r} was provided as a descending pair of integers; must be ascending; got {r!r}"
+                f"{name!r} was provided as a descending pair of integers; must be ascending; got {k!r}"
             )
         case (int() as a,) | (int() as a, None) if default is not _MISSING:
             check_int_zero_or_positive(f"{name}[0]", a)
@@ -95,7 +97,7 @@ def check_r_args(name, r, default=_MISSING):
         case _:
             raise TypeError(
                 f"{name!r} must be a non-negative integer,"
-                f" a pair of ascending non-negative integers, or None; got {r!r}"
+                f" a pair of ascending non-negative integers, or None; got {k!r}"
             )
 
 

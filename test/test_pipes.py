@@ -37,6 +37,17 @@ def test_pipe_missing_source():
 
 
 ########################################################################
+# Stage params
+
+def test_pipe_good_step_param_mutseq():
+    p = Pipe([1, 2, 3])
+    def good_step_mutseq(mutseq):
+        return mutseq
+    p._steps.append(good_step_mutseq)
+    assert list(p) == [1, 2, 3]
+
+
+########################################################################
 # Bad stage params
 
 def test_pipe_bad_source_param():
@@ -79,6 +90,15 @@ def test_pipe_bad_step_param_seq():
     def bad_step_seq(seq):
         pass
     p._steps.append(bad_step_seq)
+    with pytest.raises(TypeError):
+        list(p)
+
+
+def test_pipe_bad_step_param_mutseq():
+    p = Pipe(3)
+    def bad_step_mutseq(mutseq):
+        pass
+    p._steps.append(bad_step_mutseq)
     with pytest.raises(TypeError):
         list(p)
 
@@ -304,6 +324,30 @@ def test_pipe_source_iterfunc():
 def test_pipe_source_randrange(random_seed_0):
     p = Pipe.randrange(1, 6)
     assert list(p.take(5)) == [4, 4, 1, 3, 5]
+
+
+# Pipe.randfloat
+
+def test_pipe_source_randfloat_0_1(random_seed_0):
+    p = Pipe.randfloat()
+    assert list(p.take(5)) == pytest.approx([
+        0.8444218515250481,
+        0.7579544029403025,
+        0.420571580830845,
+        0.25891675029296335,
+        0.5112747213686085,
+    ])
+
+
+def test_pipe_source_randfloat_13_101(random_seed_0):
+    p = Pipe.randfloat(13, 101)
+    assert list(p.take(5)) == pytest.approx([
+        87.30912293420424,
+        79.69998745874662,
+        50.01029911311436,
+        35.784674025780774,
+        57.99217548043755,
+    ])
 
 
 # Pipe.range
@@ -646,7 +690,7 @@ def test_pipe_step_chunkby():
 # Pipe.combinations
 
 def test_pipe_step_combinations():
-    p = Pipe('abc').combinations(r=2)
+    p = Pipe('abc').combinations(k=2)
     assert list(p) == [('a', 'b'), ('a', 'c'), ('b', 'c')]
 
 
@@ -814,15 +858,8 @@ def test_pipe_step_peek_empty():
 # Pipe.permutations
 
 def test_pipe_step_permutations():
-    p = Pipe('abc').permutations(r=2)
+    p = Pipe('abc').permutations(k=2)
     assert list(p) == [('a', 'b'), ('a', 'c'), ('b', 'a'), ('b', 'c'), ('c', 'a'), ('c', 'b')]
-
-
-# Pipe.random_permutations
-
-def test_pipe_step_random_permutations(random_seed_0):
-    p = Pipe('abc').random_permutations(r=2).take(5)
-    assert list(p) == [('b', 'a'), ('c', 'b'), ('b', 'c'), ('c', 'a'), ('b', 'a')]
 
 
 # Pipe.reject
@@ -830,6 +867,18 @@ def test_pipe_step_random_permutations(random_seed_0):
 def test_pipe_step_reject():
     p = Pipe([1, 2, 3, 4, 5]).reject(lambda x: x % 2 == 0)
     assert list(p) == [1, 3, 5]
+
+
+# Pipe.sample
+
+def test_pipe_step_sample_without_replacement(random_seed_0):
+    p = Pipe('abc').sample(k=2).take(5)
+    assert list(p) == [('b', 'c'), ('a', 'b'), ('c', 'b'), ('b', 'c'), ('b', 'c')]
+
+
+def test_pipe_step_sample_with_replacement(random_seed_0):
+    p = Pipe('abc').sample(k=2, replacement=True).take(5)
+    assert list(p) == [('c', 'c'), ('b', 'a'), ('b', 'b'), ('c', 'a'), ('b', 'b')]
 
 
 # Pipe.scan
@@ -1344,6 +1393,13 @@ def test_pipe_sink_partition_evenodd():
 def test_pipe_sink_product():
     p = Pipe([1, 2, 3, 4, 5])
     assert p.product() == 120
+
+
+# Pipe.shuffle
+
+def test_pipe_step_shuffle(random_seed_0):
+    p = Pipe('abcdef')
+    assert list(p.shuffle()) == ['e', 'c', 'b', 'a', 'f', 'd']
 
 
 # Pipe.stdev

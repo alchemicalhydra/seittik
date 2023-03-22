@@ -38,6 +38,7 @@ seittik.pipes.Pipe.walkdir
 ### Sources: Random
 
 ```{autodoc2-summary}
+seittik.pipes.Pipe.randfloat
 seittik.pipes.Pipe.randrange
 seittik.pipes.Pipe.roll
 ```
@@ -107,7 +108,12 @@ seittik.pipes.Pipe.starmap
 ```{autodoc2-summary}
 seittik.pipes.Pipe.combinations
 seittik.pipes.Pipe.permutations
-seittik.pipes.Pipe.random_permutations
+```
+
+### Steps: Randomness/Statistics
+
+```{autodoc2-summary}
+seittik.pipes.Pipe.sample
 ```
 
 ### Steps: Extra Info
@@ -144,7 +150,7 @@ seittik.pipes.Pipe.str
 seittik.pipes.Pipe.tuple
 ```
 
-### Sinks: Math/Statistics
+### Sinks: Math/Randomness/Statistics
 
 ```{autodoc2-summary}
 seittik.pipes.Pipe.frequencies
@@ -155,6 +161,7 @@ seittik.pipes.Pipe.min
 seittik.pipes.Pipe.minmax
 seittik.pipes.Pipe.mode
 seittik.pipes.Pipe.product
+seittik.pipes.Pipe.shuffle
 seittik.pipes.Pipe.stdev
 seittik.pipes.Pipe.sum
 seittik.pipes.Pipe.variance

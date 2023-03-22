@@ -7,7 +7,7 @@ Pipes are much more powerful when combined with *shears*; see
 import array
 import builtins
 import collections
-from collections.abc import Container, Iterable, Iterator, Sequence, Sized
+from collections.abc import Container, Iterable, Iterator, MutableSequence, Sequence, Sized
 import functools
 import inspect
 import itertools
@@ -20,7 +20,7 @@ import struct
 
 from .utils.argutils import (
     check_int, check_int_positive, check_int_positive_or_none,
-    check_int_zero_or_positive, check_r_args, check_slice_args, replace,
+    check_int_zero_or_positive, check_k_args, check_slice_args, replace,
 )
 from .utils.classutils import (
     classonlymethod, lazyattr, multimethod, partialclassmethod,
@@ -197,13 +197,20 @@ class Pipe:
                     stage_args.append(iter(res))
                 case ('ix', _):
                     raise TypeError(f"{stage!r} requested an iterator and got non-iterable {res!r}")
-                # Sequence (list)
+                # Sequence (list, tuple, str)
                 case ('seq', Sequence()):
                     stage_args.append(res)
                 case ('seq', Iterable()):
                     stage_args.append(list(res))
                 case ('seq', _):
                     raise TypeError(f"{stage!r} requested a sequence and got non-iterable {res!r}")
+                # MutableSequence (list)
+                case ('mutseq', MutableSequence()):
+                    stage_args.append(res)
+                case ('mutseq', Iterable()):
+                    stage_args.append(list(res))
+                case ('mutseq', _):
+                    raise TypeError(f"{stage!r} requested a mutable sequence and got non-iterable {res!r}")
                 # Pipe
                 case ('pipe', self.__class__()):
                     stage_args.append(res)
@@ -360,6 +367,28 @@ class Pipe:
         return cls._with_source(pipe_iterfunc)
 
     @classonlymethod
+    def randfloat(cls, a=0, b=1, /):
+        """
+        {{pipe_source}} Yield uniform random floats between `a` and `b`.
+
+        If `a` and `b` are omitted, they default to `0` and `1`.
+
+        `b` is not guaranteed to ever be a result (i.e., the range should be
+        considered as `[a, b)`.
+
+        Contrast with {py:meth}`Pipe.randrange`, which yields discrete integers
+        within a closed range.
+        """
+        def pipe_randfloat(rng):
+            if a == 0 and b == 1:
+                while True:
+                    yield rng.random()
+            else:
+                while True:
+                    yield rng.uniform(a, b)
+        return cls._with_source(pipe_randfloat)
+
+    @classonlymethod
     def randrange(cls, *args, **kwargs):
         """
         {{pipe_source}} Yield random integers from a given range.
@@ -384,6 +413,9 @@ class Pipe:
         [ randrange(1, 6) ]
         -4-4-1-3-5-------->
         ```
+
+        Contrast with {py:meth}`Pipe.randfloat`, which yields floating-point
+        numbers.
         """
         start, stop, step = check_slice_args('range', args, kwargs)
         def pipe_randrange(rng):
@@ -1083,12 +1115,12 @@ class Pipe:
         p._steps.append(pipe_chunkby)
         return p
 
-    def combinations(self, r, *, replacement=False):
+    def combinations(self, k, *, replacement=False):
         """
-        {{pipe_step}} Yield all size-`r` combinations of the source items.
+        {{pipe_step}} Yield all size-`k` combinations of the source items.
 
-        `r` can also be provided as `(r_min, r_max)`, yielding combinations in
-        ascending order of size between `r_min` and `r_max`.
+        `k` can also be provided as `(k_min, k_max)`, yielding combinations in
+        ascending order of size between `k_min` and `k_max`.
 
         If `replacement` is true, source items may be repeated within a single
         combination.
@@ -1099,11 +1131,11 @@ class Pipe:
         See {py:func}`itertools.combinations` and
         {py:func}`itertools.combinations_with_replacement`.
         """
-        r_min, r_max = check_r_args('r', r, default=_POOL)
+        k_min, k_max = check_k_args('k', k, default=_POOL)
         p = self.clone()
         func = itertools.combinations_with_replacement if replacement else itertools.combinations
         def pipe_combinations(seq):
-            i_min, i_max = replace(_POOL, len(seq), r_min, r_max)
+            i_min, i_max = replace(_POOL, len(seq), k_min, k_max)
             for i in range(i_min, i_max + 1):
                 yield from func(seq, i)
         p._steps.append(pipe_combinations)
@@ -1430,54 +1462,27 @@ class Pipe:
         return p
     peek.END = END
 
-    def permutations(self, r=None):
+    def permutations(self, k=None):
         """
-        {{pipe_step}} Yield all size-`r` permutations of the source.
+        {{pipe_step}} Yield all size-`k` permutations of the source.
 
-        `r` can also be provided as `(r_min, r_max)`, yielding permutations in
-        ascending order of size between `r_min` and `r_max`.
+        `k` can also be provided as `(k_min, k_max)`, yielding permutations in
+        ascending order of size between `k_min` and `k_max`.
 
-        If `r` is `None` it defaults to the total number of items in the source.
+        If `k` is `None` it defaults to the total number of items in the source.
 
         The source must be finite, and it will be exhausted upon
         evaluation.
 
         See {py:func}`itertools.permutations`.
         """
-        r_min, r_max = check_r_args('r', r, default=_POOL)
+        k_min, k_max = check_k_args('k', k, default=_POOL)
         p = self.clone()
         def pipe_permutations(seq):
-            i_min, i_max = replace(_POOL, len(seq), r_min, r_max)
+            i_min, i_max = replace(_POOL, len(seq), k_min, k_max)
             for i in range(i_min, i_max + 1):
                 yield from itertools.permutations(seq, i)
         p._steps.append(pipe_permutations)
-        return p
-
-    def random_permutations(self, r=None, replacement=False):
-        """
-        {{pipe_step}} Yield tuples of random permutations of size `r` from the
-        source.
-
-        `r` can also be provided as `(r_min, r_max)`, causing the size of each
-        permutation to randomly vary between `r_min` and `r_max`.
-
-        If `r` is `None` it defaults to the total number of items in the source.
-
-        If `replacement` is true, the permutation will allow elements to be
-        repeated even if they are not repeated in the source.
-
-        The source must be finite, and it will be exhausted upon
-        evaluation.
-        """
-        r_min, r_max = check_r_args('r', r, default=_POOL)
-        p = self.clone()
-        def pipe_random_permutations(seq, rng):
-            k_min, k_max = replace(_POOL, len(seq), r_min, r_max)
-            func = rng.choices if replacement else rng.sample
-            while True:
-                k = rng.randint(k_min, k_max)
-                yield tuple(func(seq, k=k))
-        p._steps.append(pipe_random_permutations)
         return p
 
     def reject(self, func=None):
@@ -1505,6 +1510,38 @@ class Pipe:
         def pipe_reverse(seq):
             return reversed(seq)
         p._steps.append(pipe_reverse)
+        return p
+
+    def sample(self, k=None, *, replacement=False):
+        """
+        {{pipe_step}} Yield a `k` length list of randomly chosen source values.
+
+        `k` can also be provided as `(k_min, k_max)`, causing the size of each
+        sample to randomly vary between `k_min` and `k_max`.
+
+        If `k` is `None` it defaults to the total number of items in the source.
+
+        If `replacement` is true, the selection will be done with replacement,
+        meaning a value may be yielded more times in a sample than it shows up
+        in the source.
+
+        If `replacement` is false, this behaves effectively the same as a random
+        permutation generator; compare with {py:meth}`Pipe.permutations`.
+
+        The source must be finite, and it will be cached and exhausted upon
+        evaluation.
+
+        See {external:py:func}`random.sample`.
+        """
+        k_min, k_max = check_k_args('k', k, default=_POOL)
+        p = self.clone()
+        def pipe_sample(seq, rng):
+            func = rng.choices if replacement else rng.sample
+            i_min, i_max = replace(_POOL, len(seq), k_min, k_max)
+            while True:
+                i = i_min if i_min == i_max else rng.randint(i_min, i_max)
+                yield tuple(func(seq, k=i))
+        p._steps.append(pipe_sample)
         return p
 
     def scan(self, func, *, initial=None):
@@ -2028,6 +2065,19 @@ class Pipe:
         def pipe_product(res):
             return math.prod(res)
         return self._evaluate(sink=pipe_product)
+
+    @partialclassmethod
+    def shuffle(self):
+        """
+        {{pipe_sink}} Return a new shuffled list from this Pipe's items.
+
+        Compare with {py:meth}`Pipe.sample`, which can yield repeated shuffles.
+        """
+        def pipe_shuffle(mutseq, rng):
+            ret = mutseq.copy()
+            rng.shuffle(ret)
+            return ret
+        return self._evaluate(sink=pipe_shuffle)
 
     @partialclassmethod
     def stdev(self, sample=False, mean=None):
