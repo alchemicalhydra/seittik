@@ -107,7 +107,12 @@ seittik.pipes.Pipe.starmap
 ```{autodoc2-summary}
 seittik.pipes.Pipe.combinations
 seittik.pipes.Pipe.permutations
-seittik.pipes.Pipe.random_permutations
+```
+
+### Steps: Randomness/Statistics
+
+```{autodoc2-summary}
+seittik.pipes.Pipe.sample
 ```
 
 ### Steps: Extra Info

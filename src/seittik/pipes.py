@@ -1453,33 +1453,6 @@ class Pipe:
         p._steps.append(pipe_permutations)
         return p
 
-    def random_permutations(self, k=None, replacement=False):
-        """
-        {{pipe_step}} Yield tuples of random permutations of size `k` from the
-        source.
-
-        `k` can also be provided as `(k_min, k_max)`, causing the size of each
-        permutation to randomly vary between `k_min` and `k_max`.
-
-        If `k` is `None` it defaults to the total number of items in the source.
-
-        If `replacement` is true, the permutation will allow elements to be
-        repeated even if they are not repeated in the source.
-
-        The source must be finite, and it will be exhausted upon
-        evaluation.
-        """
-        k_min, k_max = check_k_args('k', k, default=_POOL)
-        p = self.clone()
-        def pipe_random_permutations(seq, rng):
-            i_min, i_max = replace(_POOL, len(seq), k_min, k_max)
-            func = rng.choices if replacement else rng.sample
-            while True:
-                i = rng.randint(i_min, i_max)
-                yield tuple(func(seq, k=i))
-        p._steps.append(pipe_random_permutations)
-        return p
-
     def reject(self, func=None):
         """
         {{pipe_step}} Yield items for which `func(item)` is false.
@@ -1505,6 +1478,38 @@ class Pipe:
         def pipe_reverse(seq):
             return reversed(seq)
         p._steps.append(pipe_reverse)
+        return p
+
+    def sample(self, k=None, *, replacement=False):
+        """
+        {{pipe_step}} Yield a `k` length list of randomly chosen source values.
+
+        `k` can also be provided as `(k_min, k_max)`, causing the size of each
+        sample to randomly vary between `k_min` and `k_max`.
+
+        If `k` is `None` it defaults to the total number of items in the source.
+
+        If `replacement` is true, the selection will be done with replacement,
+        meaning a value may be yielded more times in a sample than it shows up
+        in the source.
+
+        If `replacement` is false, this behaves effectively the same as a random
+        permutation generator; compare with {py:meth}`Pipe.permutations`.
+
+        The source must be finite, and it will be cached and exhausted upon
+        evaluation.
+
+        See {external:py:func}`random.sample`.
+        """
+        k_min, k_max = check_k_args('k', k, default=_POOL)
+        p = self.clone()
+        def pipe_sample(seq, rng):
+            func = rng.choices if replacement else rng.sample
+            i_min, i_max = replace(_POOL, len(seq), k_min, k_max)
+            while True:
+                i = i_min if i_min == i_max else rng.randint(i_min, i_max)
+                yield tuple(func(seq, k=i))
+        p._steps.append(pipe_sample)
         return p
 
     def scan(self, func, *, initial=None):

@@ -818,18 +818,23 @@ def test_pipe_step_permutations():
     assert list(p) == [('a', 'b'), ('a', 'c'), ('b', 'a'), ('b', 'c'), ('c', 'a'), ('c', 'b')]
 
 
-# Pipe.random_permutations
-
-def test_pipe_step_random_permutations(random_seed_0):
-    p = Pipe('abc').random_permutations(k=2).take(5)
-    assert list(p) == [('b', 'a'), ('c', 'b'), ('b', 'c'), ('c', 'a'), ('b', 'a')]
-
-
 # Pipe.reject
 
 def test_pipe_step_reject():
     p = Pipe([1, 2, 3, 4, 5]).reject(lambda x: x % 2 == 0)
     assert list(p) == [1, 3, 5]
+
+
+# Pipe.sample
+
+def test_pipe_step_sample_without_replacement(random_seed_0):
+    p = Pipe('abc').sample(k=2).take(5)
+    assert list(p) == [('b', 'c'), ('a', 'b'), ('c', 'b'), ('b', 'c'), ('b', 'c')]
+
+
+def test_pipe_step_sample_with_replacement(random_seed_0):
+    p = Pipe('abc').sample(k=2, replacement=True).take(5)
+    assert list(p) == [('c', 'c'), ('b', 'a'), ('b', 'b'), ('c', 'a'), ('b', 'b')]
 
 
 # Pipe.scan
