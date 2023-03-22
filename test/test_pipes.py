@@ -37,6 +37,17 @@ def test_pipe_missing_source():
 
 
 ########################################################################
+# Stage params
+
+def test_pipe_good_step_param_mutseq():
+    p = Pipe([1, 2, 3])
+    def good_step_mutseq(mutseq):
+        return mutseq
+    p._steps.append(good_step_mutseq)
+    assert list(p) == [1, 2, 3]
+
+
+########################################################################
 # Bad stage params
 
 def test_pipe_bad_source_param():
@@ -79,6 +90,15 @@ def test_pipe_bad_step_param_seq():
     def bad_step_seq(seq):
         pass
     p._steps.append(bad_step_seq)
+    with pytest.raises(TypeError):
+        list(p)
+
+
+def test_pipe_bad_step_param_mutseq():
+    p = Pipe(3)
+    def bad_step_mutseq(mutseq):
+        pass
+    p._steps.append(bad_step_mutseq)
     with pytest.raises(TypeError):
         list(p)
 

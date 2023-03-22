@@ -7,7 +7,7 @@ Pipes are much more powerful when combined with *shears*; see
 import array
 import builtins
 import collections
-from collections.abc import Container, Iterable, Iterator, Sequence, Sized
+from collections.abc import Container, Iterable, Iterator, MutableSequence, Sequence, Sized
 import functools
 import inspect
 import itertools
@@ -197,13 +197,20 @@ class Pipe:
                     stage_args.append(iter(res))
                 case ('ix', _):
                     raise TypeError(f"{stage!r} requested an iterator and got non-iterable {res!r}")
-                # Sequence (list)
+                # Sequence (list, tuple, str)
                 case ('seq', Sequence()):
                     stage_args.append(res)
                 case ('seq', Iterable()):
                     stage_args.append(list(res))
                 case ('seq', _):
                     raise TypeError(f"{stage!r} requested a sequence and got non-iterable {res!r}")
+                # MutableSequence (list)
+                case ('mutseq', MutableSequence()):
+                    stage_args.append(res)
+                case ('mutseq', Iterable()):
+                    stage_args.append(list(res))
+                case ('mutseq', _):
+                    raise TypeError(f"{stage!r} requested a mutable sequence and got non-iterable {res!r}")
                 # Pipe
                 case ('pipe', self.__class__()):
                     stage_args.append(res)
