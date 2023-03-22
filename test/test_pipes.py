@@ -646,7 +646,7 @@ def test_pipe_step_chunkby():
 # Pipe.combinations
 
 def test_pipe_step_combinations():
-    p = Pipe('abc').combinations(r=2)
+    p = Pipe('abc').combinations(k=2)
     assert list(p) == [('a', 'b'), ('a', 'c'), ('b', 'c')]
 
 
@@ -814,14 +814,14 @@ def test_pipe_step_peek_empty():
 # Pipe.permutations
 
 def test_pipe_step_permutations():
-    p = Pipe('abc').permutations(r=2)
+    p = Pipe('abc').permutations(k=2)
     assert list(p) == [('a', 'b'), ('a', 'c'), ('b', 'a'), ('b', 'c'), ('c', 'a'), ('c', 'b')]
 
 
 # Pipe.random_permutations
 
 def test_pipe_step_random_permutations(random_seed_0):
-    p = Pipe('abc').random_permutations(r=2).take(5)
+    p = Pipe('abc').random_permutations(k=2).take(5)
     assert list(p) == [('b', 'a'), ('c', 'b'), ('b', 'c'), ('c', 'a'), ('b', 'a')]
 
 

@@ -4,7 +4,7 @@ import pytest
 from seittik.utils.argutils import (
     check_int, check_int_or_none, check_int_positive,
     check_int_positive_or_none, check_int_zero_or_positive,
-    check_n_args, check_r_args, check_slice_args, replace,
+    check_n_args, check_k_args, check_slice_args, replace,
 )
 from seittik.utils.sentinels import _MISSING
 
@@ -126,40 +126,40 @@ def test_check_int_zero_or_positive_fail_nonint():
         check_int_zero_or_positive('x', x)
 
 
-# check_r_args
+# check_k_args
 
-def test_check_r_args_single_int():
-    r = 3
-    assert check_r_args('r', r) == (3, 3)
-
-
-def test_check_r_args_pair_ints():
-    r = (3, 9)
-    assert check_r_args('r', r) == (3, 9)
+def test_check_k_args_single_int():
+    k = 3
+    assert check_k_args('k', k) == (3, 3)
 
 
-def test_check_r_args_tuple_missing_max():
-    r = (3,)
-    assert check_r_args('r', r, default=5) == (3, 5)
-    r = (3, None)
-    assert check_r_args('r', r, default=5) == (3, 5)
+def test_check_k_args_pair_ints():
+    k = (3, 9)
+    assert check_k_args('k', k) == (3, 9)
 
 
-def test_check_r_args_tuple_missing():
-    r = None
-    assert check_r_args('r', r, default=5) == (5, 5)
+def test_check_k_args_tuple_missing_max():
+    k = (3,)
+    assert check_k_args('k', k, default=5) == (3, 5)
+    k = (3, None)
+    assert check_k_args('k', k, default=5) == (3, 5)
 
 
-def test_check_r_args_tuple_fail_descending():
-    r = (9, 3)
+def test_check_k_args_tuple_missing():
+    k = None
+    assert check_k_args('k', k, default=5) == (5, 5)
+
+
+def test_check_k_args_tuple_fail_descending():
+    k = (9, 3)
     with pytest.raises(ValueError):
-        check_r_args('r', r)
+        check_k_args('k', k)
 
 
-def test_check_r_args_tuple_fail_badtype():
-    r = 'meow'
+def test_check_k_args_tuple_fail_badtype():
+    k = 'meow'
     with pytest.raises(TypeError):
-        check_r_args('r', r)
+        check_k_args('k', k)
 
 
 # check_slice_args
