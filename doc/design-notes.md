@@ -466,7 +466,7 @@ Groups adjacent elements into tuples.
 
 I felt both the name and behavior of `itertools.groupby` were confusing
 and not as useful to work with; this `Pipe` step simply yields tuples of
-adjacent items with matching keys.
+adjacent items that have matching keys, without yielding the keys.
 
 For behavior that groups all elements by a key function regardless of
 their position in the source, see {py:meth}`Pipe.groupby`.
