@@ -258,6 +258,7 @@ libraries as I could manage, including:
 - [JavaScript: Ramda](https://ramdajs.com/docs/)
 - [Kotlin: collections](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/)
 - [Kotlin: sequences](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.sequences/)
+- [MongoDB: aggregation](https://www.mongodb.com/docs/manual/meta/aggregation-quick-reference/)
 - [Python: funcy](https://funcy.readthedocs.io/en/stable/)
 - [Python: Itertools](https://docs.python.org/3/library/itertools.html)
 - [Python: More Itertools](https://more-itertools.readthedocs.io/en/stable/)
@@ -657,6 +658,18 @@ internally.
 - {rb-enumerable}`reject`
 
 `reject` feels like a cleaner name than `filterfalse`.
+
+#### {py:meth}`.remap() <seittik.pipes.Pipe.remap>`
+
+- {js-ramda}`omit`
+- {js-ramda}`pick`
+- {js-ramda}`pickBy`
+- {js-ramda}`project`
+- {mdb-agg}`addFields`
+- {mdb-agg}`project`
+
+A mapping remapper. Allows selectively keeping, dropping, and renaming
+key-value pairs, transforming values, and inserting new values.
 
 #### {py:meth}`.reverse() <seittik.pipes.Pipe.reverse>`
 

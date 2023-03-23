@@ -9,7 +9,7 @@ import builtins
 import collections
 from collections.abc import (
     Callable, Container, Iterable, Iterator,
-    MutableSequence, Sequence, Set, Sized,
+    Mapping, MutableSequence, Sequence, Set, Sized,
 )
 import functools
 import inspect
@@ -20,6 +20,7 @@ import pathlib
 import random
 import statistics
 import struct
+from types import EllipsisType
 
 from .utils.abc import NonStrSequence
 from .utils.argutils import (
@@ -35,7 +36,7 @@ from .utils.diceutils import DiceRoll
 from .utils.flatten import flatten
 from .utils.merge import merge
 from .utils.randutils import SHARED_RANDOM
-from .utils.sentinels import _END, _MISSING, _POOL, Sentinel
+from .utils.sentinels import _DROP, _END, _KEEP, _MISSING, _POOL, Sentinel
 from .utils.structutils import calc_struct_input
 from .utils.walk import walk_collection
 
@@ -43,7 +44,9 @@ from .utils.walk import walk_collection
 __all__ = ('Pipe',)
 
 
+DROP = _DROP
 END = _END
+KEEP = _KEEP
 
 
 class EnumerateInfo:
@@ -118,6 +121,9 @@ class Pipe:
         Out[1]: [1, 2, 3, 4, 5]
     ```
     """
+    DROP = _DROP
+    KEEP = _KEEP
+
     def __init__(self, source=_MISSING, *, rng=_MISSING):
         self._source = source if source is _MISSING else PlainSource(source)
         self._steps = []
@@ -1568,6 +1574,121 @@ class Pipe:
         def pipe_reject(res):
             return itertools.filterfalse(func, res)
         return self._with_step(pipe_reject)
+
+    def remap(self, *args, **kwargs):
+        """
+        {{pipe_step}} Yield transformed mappings using the supplied expressions.
+
+        Each input must be a mapping.
+
+        By default, all key-value pairs are dropped from the output mapping unless
+        explicitly selected. Pass `...` (see below) to toggle this behavior.
+
+        For each `arg` in `args`, input mapping `input`, and output mapping
+        `output`:
+
+        - If `arg` is an {py:data}`Ellipsis` (`...`), `remap` will keep key-value
+          pairs by default in the output mapping, instead of dropping them.
+        - If `arg` is a string: `output[arg] = input[arg]`
+        - If `arg` is a tuple `(key, default)`: `output[key] = input.get(key,
+          default)`
+        - If `arg` is a callable: `output.update(arg(input))`
+        - If `arg` is a mapping, for each `key`-`value` pair of `arg`:
+          - If `key in input`:
+            - If `value` is a string: `output[key] = input[value]`
+            - If `value` is a tuple `(value_key, default)`: `output[key] =
+              input.get(value_key, default)`
+            - If `value` is {py:attr}`Pipe.KEEP`: `output[key] = input[key]`
+            - If `value` is {py:attr}`Pipe.DROP`, the output mapping will *not*
+              include that key-value pair from the input mapping.
+            - If `value` is a callable, for `value_ret = value(input[key])`:
+              - If `value_ret` is {py:attr}`Pipe.KEEP` or {py:attr}`Pipe.DROP`, it will
+                be handled the same way as above.
+              - If `value_ret` is any other value: `output[key] = value_ret`
+            - If `value` is of any other type, raise a {py:exc}`TypeError`.
+          - If `key not in input`:
+            - If `value` is {py:attr}`Pipe.KEEP`, raise a {py:exc}`TypeError` (because
+              there's no existing key to keep).
+            - If `value` is {py:attr}`Pipe.DROP`, no action will be taken (because
+              there's no existing key to drop).
+            - If `value` is a callable, for `value_ret = value(input)`:
+              - If `value_ret` is {py:attr}`Pipe.KEEP`, raise a {py:exc}`TypeError`
+                (because there's no existing key to keep).
+              - If `value_ret` is {py:attr}`Pipe.DROP`, no action will be taken (because
+                there's no existing key to drop).
+              - If `value_ret` is anything else: `output[key] = value_ret`
+            - If `value` is of any other kind, raise a {py:exc}`TypeError`.
+        - If `arg` is of any other type, raise a {py:exc}`TypeError`.
+
+        For any `kwargs` provided, act as if `kwargs` was a mapping passed as an
+        `arg` above.
+        """
+        p = self.clone()
+        def pipe_remap(res):
+            keep_by_default = False
+            for item in res:
+                if not isinstance(item, Mapping):
+                    raise TypeError(f"Input item was not a mapping; got {item!r} of type {type(item)!r}")
+                ret = {}
+                dropped_keys = set()
+                def _mapping_handler(mapping):
+                    for m_k, m_v in mapping.items():
+                        match m_v:
+                            case _ if m_v is DROP:
+                                dropped_keys.add(m_k)
+                            case _ if m_v is KEEP:
+                                ret[m_k] = item[m_k]
+                            case str():
+                                ret[m_k] = item[m_v]
+                            case (str() as key, default):
+                                ret[m_k] = item.get(key, default)
+                            case Callable():
+                                try:
+                                    item_v = item[m_k]
+                                except KeyError:
+                                    item_v = m_v(item)
+                                    match item_v:
+                                        case _ if item_v is KEEP:
+                                            raise TypeError(
+                                                f"KEEP cannot be returned for key {m_k!r}"
+                                                " which is not present in the original item"
+                                            )
+                                        case _ if item_v is DROP:
+                                            pass
+                                        case _:
+                                            ret[m_k] = item_v
+                                else:
+                                    match (item_v_ret := m_v(item_v)):
+                                        case _ if item_v_ret is DROP:
+                                            dropped_keys.add(m_k)
+                                        case _ if item_v_ret is KEEP:
+                                            ret[m_k] = item_v
+                                        case _:
+                                            ret[m_k] = item_v_ret
+                            case _:
+                                raise TypeError(
+                                    f"Invalid type for remap key {m_k!r}: {m_v!r} of type {type(m_v)!r}"
+                                )
+                for arg in args:
+                    match arg:
+                        case EllipsisType():
+                            keep_by_default = True
+                        case str():
+                            ret[arg] = item[arg]
+                        case (str() as key, default):
+                            ret[key] = item.get(key, default)
+                        case Callable():
+                            ret.update(arg(item))
+                        case Mapping():
+                            _mapping_handler(arg)
+                        case _:
+                            raise TypeError(f"Invalid type for remap arg {arg!r} of type {type(arg)!r}")
+                _mapping_handler(kwargs)
+                if keep_by_default:
+                    ret.update({k: item[k] for k in (item.keys() - ret.keys() - dropped_keys)})
+                yield ret
+        p._steps.append(pipe_remap)
+        return p
 
     def reverse(self):
         """

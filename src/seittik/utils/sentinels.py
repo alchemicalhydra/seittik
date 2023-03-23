@@ -17,6 +17,8 @@ class Sentinel:
     __hash__ = None
 
 
+_DROP = Sentinel('DROP')
 _END = Sentinel('END')
+_KEEP = Sentinel('KEEP')
 _MISSING = Sentinel('MISSING')
 _POOL = Sentinel('POOL')

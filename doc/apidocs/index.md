@@ -114,6 +114,7 @@ seittik.pipes.Pipe.clamp
 seittik.pipes.Pipe.dictmap
 seittik.pipes.Pipe.label
 seittik.pipes.Pipe.map
+seittik.pipes.Pipe.remap
 seittik.pipes.Pipe.scan
 seittik.pipes.Pipe.starmap
 ```
