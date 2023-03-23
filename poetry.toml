@@ -1,0 +1,16 @@
+# Upstream Poetry recently introduced this change:
+#
+# https://github.com/python-poetry/poetry/pull/7358
+#
+# This flat-out breaks the installation of `pydata-sphinx-theme`:
+#
+# https://github.com/pydata/pydata-sphinx-theme/issues/1253
+#
+# The workaround is below (specifically, setting `modern-installation =
+# false`).
+
+[experimental]
+new-installer = true
+
+[installer]
+modern-installation = false
