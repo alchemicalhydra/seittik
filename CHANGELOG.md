@@ -19,9 +19,10 @@ history](https://github.com/alchemicalhydra/seittik/commits/master).
     the Pipe's RNG via dependency injection.
 - A new source, `Pipe.randfloat`, was added.
 - A new sink, `Pipe.shuffle`, was added.
-- The `Pipe.random_permutations` step was refactored into `Pipe.sample`.
-- Various statistical and set-theory Pipe methods had their `r` parameters
-  renamed to `k`.
+- **Breaking change:** The `Pipe.random_permutations` step was
+  refactored into `Pipe.sample`.
+- **Breaking change:** Various statistical and set-theory Pipe methods had
+  their `r` parameters renamed to `k`.
 - The cross-references section of the Design Notes was further fleshed
   out.
 - The `sphinx.ext.extlinks` Sphinx extension was replaced with one of our
