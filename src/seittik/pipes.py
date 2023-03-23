@@ -858,7 +858,7 @@ class Pipe:
             p._steps.append(pipe_interleave)
             return p
 
-    class unpack(multimethod):
+    class struct_unpack(multimethod):
         """
         {{pipe_sourcestep}} Yield items unpacked from a buffer according to a
         format string.
@@ -870,9 +870,9 @@ class Pipe:
             {{pipe_source}} Yield tuples of unpacked bytes from `buffer` using
             `format`.
             """
-            def pipe_unpack():
+            def pipe_struct_unpack():
                 return struct.iter_unpack(format_, buffer)
-            return cls._with_source(pipe_unpack)
+            return cls._with_source(pipe_struct_unpack)
 
         def _instance(self, format_, /):
             """
@@ -880,10 +880,10 @@ class Pipe:
             `format`.
             """
             p = self.clone()
-            def pipe_unpack(res):
+            def pipe_struct_unpack(res):
                 for item in res:
                     yield struct.unpack(format_, item)
-            p._steps.append(pipe_unpack)
+            p._steps.append(pipe_struct_unpack)
             return p
 
     class zip(multimethod):
@@ -2015,14 +2015,14 @@ class Pipe:
         return self._evaluate(sink=pipe_nth)
 
     @partialclassmethod
-    def pack(self, format_, /):
+    def struct_pack(self, format_, /):
         """
         {{pipe_sink}} Return packed {external:py:class}`bytes` from this Pipe's
         items using `format`.
 
         See {external:py:func}`struct.pack`.
         """
-        def pipe_pack(pipe):
+        def pipe_struct_pack(pipe):
             fsize = calc_struct_input(format_)
             if not fsize:
                 return b''
@@ -2030,7 +2030,7 @@ class Pipe:
             for chunk in pipe.chunk(fsize):
                 ret.append(struct.pack(format_, *chunk))
             return b''.join(ret)
-        return self._evaluate(sink=pipe_pack)
+        return self._evaluate(sink=pipe_struct_pack)
 
     @partialclassmethod
     def partition(self, func=None):

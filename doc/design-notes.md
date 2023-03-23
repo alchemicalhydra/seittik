@@ -396,7 +396,7 @@ For a more powerful variant, see {py:meth}`Pipe.flatten`.
 - {py-more-itertools}`interleave_longest`
 - {py-more-itertools}`roundrobin` (`itertools` recipe)
 
-#### {py:meth}`.unpack() <seittik.pipes.Pipe.unpack>`
+#### {py:meth}`.struct_unpack() <seittik.pipes.Pipe.struct_unpack>`
 
 - {py-struct}`iter_unpack`
 - {py-struct}`unpack`
@@ -950,7 +950,7 @@ For behavior that only groups adjacent elements, see
 - {kt-collections}`elementAtOrNull`
 - {py-more-itertools}`nth` (`itertools` recipe)
 
-#### {py:meth}`.pack() <seittik.pipes.Pipe.pack>`
+#### {py:meth}`.struct_pack() <seittik.pipes.Pipe.struct_pack>`
 
 - {py-struct}`pack`
 

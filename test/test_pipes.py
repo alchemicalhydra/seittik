@@ -534,15 +534,15 @@ def test_pipe_sourcestep_interleave_intermediate_fair():
     assert list(p) == ['a', 'd', 'g', 'b', 'e', 'h']
 
 
-# Pipe.unpack
+# Pipe.struct_unpack
 
-def test_pipe_sourcestep_unpack_constructor():
-    p = Pipe.unpack('<ffff', b'\x00\x00\xdaB\x00\x00\xcaB\x00\x00\xdeB\x00\x00\xeeB').zip().flatten().map(int)
+def test_pipe_sourcestep_struct_unpack_constructor():
+    p = Pipe.struct_unpack('<ffff', b'\x00\x00\xdaB\x00\x00\xcaB\x00\x00\xdeB\x00\x00\xeeB').zip().flatten().map(int)
     assert bytes(p) == b'meow'
 
 
-def test_pipe_sourcestep_unpack_intermediate():
-    p = Pipe([b'\x00\x00\xdaB\x00\x00\xcaB\x00\x00\xdeB\x00\x00\xeeB']).unpack('<ffff').zip().flatten().map(int)
+def test_pipe_sourcestep_struct_unpack_intermediate():
+    p = Pipe([b'\x00\x00\xdaB\x00\x00\xcaB\x00\x00\xdeB\x00\x00\xeeB']).struct_unpack('<ffff').zip().flatten().map(int)
     assert bytes(p) == b'meow'
 
 
@@ -1364,16 +1364,16 @@ def test_pipe_sink_nth_default_ix():
     assert p.nth(5, default='meow') == 'meow'
 
 
-# Pipe.pack
+# Pipe.struct_pack
 
-def test_pipe_sink_pack():
+def test_pipe_sink_struct_pack():
     p = Pipe([*b'meow'])
-    assert p.pack('<ffff') == b'\x00\x00\xdaB\x00\x00\xcaB\x00\x00\xdeB\x00\x00\xeeB'
+    assert p.struct_pack('<ffff') == b'\x00\x00\xdaB\x00\x00\xcaB\x00\x00\xdeB\x00\x00\xeeB'
 
 
-def test_pipe_sink_pack_empty():
+def test_pipe_sink_struct_pack_empty():
     p = Pipe([*b'meow'])
-    assert p.pack('') == b''
+    assert p.struct_pack('') == b''
 
 
 # Pipe.partition

@@ -51,7 +51,7 @@ These act as sources when used as class methods, and steps otherwise.
 seittik.pipes.Pipe.cartesian_product
 seittik.pipes.Pipe.chain
 seittik.pipes.Pipe.interleave
-seittik.pipes.Pipe.unpack
+seittik.pipes.Pipe.struct_unpack
 seittik.pipes.Pipe.zip
 ```
 
@@ -193,7 +193,7 @@ seittik.pipes.Pipe.count
 seittik.pipes.Pipe.exhaust
 seittik.pipes.Pipe.fold
 seittik.pipes.Pipe.nth
-seittik.pipes.Pipe.pack
+seittik.pipes.Pipe.struct_pack
 ```
 
 ## Shears
