@@ -69,7 +69,7 @@ class Pipe:
     """
     A fluent interface for processing iterable data.
 
-    A Pipe is built out of three kinds of parts:
+    A Pipe is built out of three kinds of parts, or *stages*:
 
     - A Pipe has a *source*, which is the initial iterable of data provided to
       a Pipe.
