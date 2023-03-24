@@ -428,6 +428,11 @@ This works as an `unzip`, too, so there's no need for a separate method.
 
 These are intermediate transformations of a pipe's data.
 
+#### {py:meth}`.append() <seittik.pipes.Pipe.append>`
+
+- {js-ramda}`append`
+- {py-collections}`deque.append`
+
 #### {py:meth}`.broadcast() <seittik.pipes.Pipe.broadcast>`
 
 I found myself frequently using a pattern where I wanted each iterator
@@ -498,6 +503,12 @@ their position in the source, see {py:meth}`Pipe.groupby`.
 - {py-itertools}`combinations_with_replacement`
 
 I saw no reason to keep these as separate functions.
+
+#### {py:meth}`.concat() <seittik.pipes.Pipe.concat>`
+
+- {js-ramda}`concat`
+- {py-collections}`deque.extend`
+- {py-itertools}`chain`
 
 #### {py:meth}`.cycle() <seittik.pipes.Pipe.cycle>`
 
@@ -620,6 +631,16 @@ internally.
 
 - {hs-data-list}`permutations`
 - {py-itertools}`permutations`
+
+#### {py:meth}`.precat() <seittik.pipes.Pipe.precat>`
+
+- {py-itertools}`chain`
+- {py-collections}`deque.extendleft`
+
+#### {py:meth}`.prepend() <seittik.pipes.Pipe.prepend>`
+
+- {js-ramda}`prepend`
+- {py-collections}`deque.appendleft`
 
 #### {py:meth}`.reject() <seittik.pipes.Pipe.reject>`
 

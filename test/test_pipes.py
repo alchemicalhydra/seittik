@@ -628,6 +628,18 @@ def test_pipe_sourcestep_zip_intermediate_strict():
 ########################################################################
 # Steps
 
+# Pipe.append
+
+def test_pipe_step_append_1():
+    p = Pipe(['a', 'b', 'c']).append('d')
+    assert list(p) == ['a', 'b', 'c', 'd']
+
+
+def test_pipe_step_append_2():
+    p = Pipe(['a', 'b', 'c']).append('d', 'e')
+    assert list(p) == ['a', 'b', 'c', 'd', 'e']
+
+
 # Pipe.broadcast
 
 def test_pipe_step_broadcast():
@@ -713,6 +725,13 @@ def test_pipe_step_chunkby():
 def test_pipe_step_combinations():
     p = Pipe('abc').combinations(k=2)
     assert list(p) == [('a', 'b'), ('a', 'c'), ('b', 'c')]
+
+
+# Pipe.concat
+
+def test_pipe_step_concat():
+    p = Pipe(['a', 'b', 'c']).concat(['d', 'e', 'f'])
+    assert list(p) == ['a', 'b', 'c', 'd', 'e', 'f']
 
 
 # Pipe.cycle
@@ -881,6 +900,25 @@ def test_pipe_step_peek_empty():
 def test_pipe_step_permutations():
     p = Pipe('abc').permutations(k=2)
     assert list(p) == [('a', 'b'), ('a', 'c'), ('b', 'a'), ('b', 'c'), ('c', 'a'), ('c', 'b')]
+
+
+# Pipe.precat
+
+def test_pipe_step_precat():
+    p = Pipe(['a', 'b', 'c']).precat(['d', 'e', 'f'])
+    assert list(p) == ['d', 'e', 'f', 'a', 'b', 'c']
+
+
+# Pipe.prepend
+
+def test_pipe_step_prepend_1():
+    p = Pipe(['a', 'b', 'c']).prepend('d')
+    assert list(p) == ['d', 'a', 'b', 'c']
+
+
+def test_pipe_step_prepend_2():
+    p = Pipe(['a', 'b', 'c']).prepend('d', 'e')
+    assert list(p) == ['d', 'e', 'a', 'b', 'c']
 
 
 # Pipe.reject

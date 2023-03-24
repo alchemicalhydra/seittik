@@ -977,6 +977,19 @@ class Pipe:
     ##############################################################
     # Modify an existing Pipe: intermediate steps
 
+    def append(self, *items):
+        """
+        {{pipe_step}} Yield each of the source's items, then yield each of `items`.
+
+        Compare with {py:meth}`Pipe.prepend`, which yields the `items` first,
+        and then yields the source's items.
+        """
+        p = self.clone()
+        def pipe_append(res):
+            return itertools.chain(res, items)
+        p._steps.append(pipe_append)
+        return p
+
     def broadcast(self, n):
         """
         {{pipe_step}} Yield tuples containing each item repeated `n` times.
@@ -1166,6 +1179,23 @@ class Pipe:
             for i in range(i_min, i_max + 1):
                 yield from func(seq, i)
         p._steps.append(pipe_combinations)
+        return p
+
+    def concat(self, *iterables):
+        """
+        {{pipe_step}} Yield all items from the source, then all items from each
+        of `iterables`, in order.
+
+        Compare with {py:meth}`Pipe.precat`, which yields from the provided
+        iterables first, and then yields the source's items.
+
+        Contrast with {py:meth}`Pipe.chain`, which treats each source item as a
+        sub-iterable to yield items from.
+        """
+        p = self.clone()
+        def pipe_concat(res):
+            return itertools.chain(res, *iterables)
+        p._steps.append(pipe_concat)
         return p
 
     def cycle(self, n=None):
@@ -1510,6 +1540,37 @@ class Pipe:
             for i in range(i_min, i_max + 1):
                 yield from itertools.permutations(seq, i)
         p._steps.append(pipe_permutations)
+        return p
+
+    def precat(self, *iterables):
+        """
+        {{pipe_step}} Yield all items from each of `iterables` in order, and
+        then yield each of the source's items.
+
+        Compare with {py:meth}`Pipe.concat`, which yields the source's items
+        first, and then yields from each of iterables.
+
+        Contrast with {py:meth}`Pipe.chain`, which treats each source item as a
+        sub-iterable to yield items from.
+        """
+        p = self.clone()
+        def pipe_precat(res):
+            return itertools.chain(*iterables, res)
+        p._steps.append(pipe_precat)
+        return p
+
+    def prepend(self, *items):
+        """
+        {{pipe_step}} Yield each of `items`, and then yield each of the source's
+        items.
+
+        Compare with {py:meth}`Pipe.append`, which yields the source's items
+        first, and then yields the `items`.
+        """
+        p = self.clone()
+        def pipe_prepend(res):
+            return itertools.chain(items, res)
+        p._steps.append(pipe_prepend)
         return p
 
     def reject(self, func=None):

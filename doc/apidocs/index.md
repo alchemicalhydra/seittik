@@ -80,8 +80,12 @@ seittik.pipes.Pipe.unique
 ### Steps: Lengthening
 
 ```{autodoc2-summary}
+seittik.pipes.Pipe.append
+seittik.pipes.Pipe.concat
 seittik.pipes.Pipe.cycle
 seittik.pipes.Pipe.intersperse
+seittik.pipes.Pipe.precat
+seittik.pipes.Pipe.prepend
 ```
 
 ### Steps: Chunking, Flattening, and Grouping
