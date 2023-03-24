@@ -316,6 +316,15 @@ class Pipe:
     # Create a new Pipe: alternate constructors
 
     @classonlymethod
+    def items(cls, mapping, /):
+        """
+        {{pipe_source}} Yield the items (key-value pairs) of `mapping`.
+        """
+        def pipe_items():
+            return mapping.items()
+        return cls._with_source(pipe_items)
+
+    @classonlymethod
     def iterdir(cls, path):
         """
         {{pipe_source}} Yield {py:class}`pathlib.Path` instances for the
@@ -365,6 +374,15 @@ class Pipe:
                 ret = func(ret)
                 yield ret
         return cls._with_source(pipe_iterfunc)
+
+    @classonlymethod
+    def keys(cls, mapping, /):
+        """
+        {{pipe_source}} Yield the keys of `mapping`.
+        """
+        def pipe_keys():
+            return mapping.keys()
+        return cls._with_source(pipe_keys)
 
     @classonlymethod
     def randfloat(cls, a=0, b=1, /):
@@ -645,6 +663,15 @@ class Pipe:
                     case _:
                         return
         return cls._with_source(pipe_unfold)
+
+    @classonlymethod
+    def values(cls, mapping, /):
+        """
+        {{pipe_source}} Yield the values of `mapping`.
+        """
+        def pipe_values():
+            return mapping.values()
+        return cls._with_source(pipe_values)
 
     @classonlymethod
     def walk(

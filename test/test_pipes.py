@@ -298,6 +298,13 @@ def test_pipe_rng_seed():
 ########################################################################
 # Sources
 
+# Pipe.items
+
+def test_pipe_source_items():
+    p = Pipe.items({'a': 1, 'b': 2, 'c': 3})
+    assert list(p) == [('a', 1), ('b', 2), ('c', 3)]
+
+
 # Pipe.iterfunc
 
 def test_pipe_source_iterdir(fs):
@@ -317,6 +324,13 @@ def test_pipe_source_iterdir(fs):
 def test_pipe_source_iterfunc():
     p = Pipe.iterfunc(lambda x: x + 1, 13)
     assert list(p.take(5)) == [13, 14, 15, 16, 17]
+
+
+# Pipe.keys
+
+def test_pipe_source_keys():
+    p = Pipe.keys({'a': 1, 'b': 2, 'c': 3})
+    assert list(p) == ['a', 'b', 'c']
 
 
 # Pipe.randrange
@@ -441,6 +455,13 @@ def test_pipe_source_unfold_endearly():
         return
     p = Pipe.unfold(endearly, 2)
     assert list(p) == [2, 4, 8]
+
+
+# Pipe.values
+
+def test_pipe_source_values():
+    p = Pipe.values({'a': 1, 'b': 2, 'c': 3})
+    assert list(p) == [1, 2, 3]
 
 
 # Pipe.walk

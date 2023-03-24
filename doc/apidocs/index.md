@@ -28,6 +28,14 @@ seittik.pipes.Pipe.unfold
 seittik.pipes.Pipe.walk
 ```
 
+### Sources: Mappings
+
+```{autodoc2-summary}
+seittik.pipes.Pipe.items
+seittik.pipes.Pipe.keys
+seittik.pipes.Pipe.values
+```
+
 ### Sources: Paths
 
 ```{autodoc2-summary}

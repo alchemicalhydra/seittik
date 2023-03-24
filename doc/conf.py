@@ -114,6 +114,7 @@ xlinks = {
     'py-pathlib': ('https://docs.python.org/3/library/pathlib.html#pathlib.{v}', "Python pathlib: {v}"),
     'py-random': ('https://docs.python.org/3/library/random.html#random.{v}', "Python random: {v}"),
     'py-statistics': ('https://docs.python.org/3/library/statistics.html#statistics.{v}', "Python statistics: {v}"),
+    'py-stdtypes': ('https://docs.python.org/3/library/stdtypes.html#{v}', "Python stdtypes: {v}"),
     'py-struct': ('https://docs.python.org/3/library/struct.html#struct.{v}', "Python struct: {v}"),
     'rb-enumerable': _fix_rb('https://ruby-doc.org/current/Enumerable.html#method-i-{v}', "Ruby Enumerable: {v}"),
 }
