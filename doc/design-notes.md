@@ -664,18 +664,6 @@ internally.
 
 I prefer verb names over adjectives.
 
-#### {py:meth}`.scan() <seittik.pipes.Pipe.scan>`
-
-- {clj-core}`reductions`
-- {hs-data-list}`scanl`
-- {hs-data-list}`scanl1`
-- {js-fxts}`scan`
-- {js-ramda}`scan`
-- {kt-collections}`runningFold`
-- {kt-collections}`runningReduce`
-- {kt-collections}`scan`
-- {py-itertools}`accumulate`
-
 #### {py:meth}`.sample() <seittik.pipes.Pipe.sample>`
 
 - {py-more-itertools}`random_permutation`
@@ -689,6 +677,18 @@ Without arguments, equivalent to yielding a shuffle.
 
 A random permutation and a random sample (without replacement) are
 actually the same thing.
+
+#### {py:meth}`.scan() <seittik.pipes.Pipe.scan>`
+
+- {clj-core}`reductions`
+- {hs-data-list}`scanl`
+- {hs-data-list}`scanl1`
+- {js-fxts}`scan`
+- {js-ramda}`scan`
+- {kt-collections}`runningFold`
+- {kt-collections}`runningReduce`
+- {kt-collections}`scan`
+- {py-itertools}`accumulate`
 
 #### {py:meth}`.slice() <seittik.pipes.Pipe.slice>`
 
