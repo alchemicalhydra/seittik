@@ -279,6 +279,10 @@ over time.
 
 These create a new source.
 
+#### {py:meth}`.items() <seittik.pipes.Pipe.items>`
+
+- {py-stdtypes}`dict.items`
+
 #### {py:meth}`.iterdir() <seittik.pipes.Pipe.iterdir>`
 
 - {py-pathlib}`Path.iterdir`
@@ -291,6 +295,10 @@ These create a new source.
 
 I felt the term "iterate" was too similar to {py-builtins}`iter` and the
 Python concept of iteration in general.
+
+#### {py:meth}`.keys() <seittik.pipes.Pipe.keys>`
+
+- {py-stdtypes}`dict.keys`
 
 #### {py:meth}`.randfloat() <seittik.pipes.Pipe.randfloat>`
 
@@ -345,6 +353,10 @@ style of notation.
 
 - {js-ramda}`unfold`
 - {hs-data-list}`unfoldr`
+
+#### {py:meth}`.values() <seittik.pipes.Pipe.values>`
+
+- {py-stdtypes}`dict.values`
 
 #### {py:meth}`.walk() <seittik.pipes.Pipe.walk>`
 
