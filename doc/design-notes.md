@@ -718,6 +718,14 @@ actually the same thing.
 
 I prefer verb names over adjectives.
 
+#### {py:meth}`.split() <seittik.pipes.Pipe.split>`
+
+- {clj-core}`split-at`
+- {js-ramda}`splitAt`
+- {py-more-itertools}`split_before`
+
+Can split based on indexes, matching values, or callables.
+
 #### {py:meth}`.starmap() <seittik.pipes.Pipe.starmap>`
 
 - {py-itertools}`starmap`

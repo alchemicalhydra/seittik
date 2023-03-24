@@ -8,7 +8,8 @@ import array
 import builtins
 import collections
 from collections.abc import (
-    Callable, Container, Iterable, Iterator, MutableSequence, Sequence, Sized,
+    Callable, Container, Iterable, Iterator,
+    MutableSequence, Sequence, Set, Sized,
 )
 import functools
 import inspect
@@ -20,6 +21,7 @@ import random
 import statistics
 import struct
 
+from .utils.abc import NonStrSequence
 from .utils.argutils import (
     check_int, check_int_positive, check_int_positive_or_none,
     check_int_zero_or_positive, check_k_args, check_slice_args, replace,
@@ -1684,6 +1686,75 @@ class Pipe:
         def pipe_sort(res):
             return sorted(res, key=key, reverse=reverse)
         p._steps.append(pipe_sort)
+        return p
+
+    def split(self, *, index=_MISSING, value=_MISSING):
+        """
+        {{pipe_step}} Yield lists representing the source items split at certain
+        points.
+
+        For `index`:
+
+        - If `index` is an `int`, create a new split before the item with the
+          matching index.
+        - If `index` is a sequence of `int`, create a new split before each
+          matching item index.
+        - If `index` is a callable, it will be called as `index(i)` for each item
+          index `i`. If it returns true, a new split will be started before the
+          item.
+
+        For `value`:
+
+        - If `value` is a callable, it will be called as `value(item)` for each
+          item. If it returns true, a new split will be started before the item.
+        - If `value` is a sequence of objects, create a new split if `item in
+          value`.
+        - If `value` is any other object, a new split will be started if `item ==
+          value`.
+        """
+        p = self.clone()
+        def pipe_split(res):
+            target = []
+            last = None
+            match index:
+                case _ if index is _MISSING:
+                    split_indexes = set()
+                case int():
+                    split_indexes = {index}
+                case NonStrSequence():
+                    split_indexes = set(index)
+                case Set():
+                    split_indexes = index
+                case Callable():
+                    split_indexes = set()
+                case _:
+                    raise TypeError(f"Unknown 'index' {index!r} of type {type(index)!r}")
+            match value:
+                case _ if value is _MISSING:
+                    split_values = set()
+                case NonStrSequence():
+                    split_values = set(value)
+                case Set():
+                    split_values = value
+                case Callable():
+                    split_values = set()
+                case _:
+                    split_values = {value}
+            for i, v in enumerate(res):
+                should_split = (
+                    (i in split_indexes)
+                    or (v in split_values)
+                    or (callable(index) and index(i))
+                    or (callable(value) and value(v))
+                )
+                if should_split:
+                    if target:
+                        yield target
+                    target = []
+                target.append(v)
+            if target:
+                yield target
+        p._steps.append(pipe_split)
         return p
 
     def starmap(self, func):
