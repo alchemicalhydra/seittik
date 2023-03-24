@@ -1,23 +1,22 @@
 __all__ = ()
 
 
-class SentinelMeta(type):
-    def __bool__(cls):
+class Sentinel:
+    def __init__(self, name):
+        self.name = name
+
+    def __bool__(self):
         return False
 
-    def __eq__(cls, other):
+    def __eq__(self, other):
         return False
 
-    def __repr__(cls):
-        return f"<{cls.__name__}>"
+    def __repr__(self):
+        return f"<{self.name}>"
 
     __hash__ = None
 
 
-def sentinel(name):
-    return SentinelMeta(name, (), {})
-
-
-_END = sentinel('END')
-_MISSING = sentinel('MISSING')
-_POOL = sentinel('POOL')
+_END = Sentinel('END')
+_MISSING = Sentinel('MISSING')
+_POOL = Sentinel('POOL')

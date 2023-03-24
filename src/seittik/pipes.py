@@ -7,7 +7,9 @@ Pipes are much more powerful when combined with *shears*; see
 import array
 import builtins
 import collections
-from collections.abc import Container, Iterable, Iterator, MutableSequence, Sequence, Sized
+from collections.abc import (
+    Callable, Container, Iterable, Iterator, MutableSequence, Sequence, Sized,
+)
 import functools
 import inspect
 import itertools
@@ -29,7 +31,7 @@ from .utils.collections import Seen
 from .utils.diceutils import DiceRoll
 from .utils.flatten import flatten
 from .utils.randutils import SHARED_RANDOM
-from .utils.sentinels import _END, _MISSING, _POOL
+from .utils.sentinels import _END, _MISSING, _POOL, Sentinel
 from .utils.structutils import calc_struct_input
 from .utils.walk import walk_collection
 
@@ -1269,8 +1271,11 @@ class Pipe:
         -a-b---c-----a-c-b---a->
         ```
         """
-        if not callable(key):
-            raise TypeError("'key' must be a callable")
+        match key:
+            case Callable() | Sentinel():
+                pass
+            case _:
+                raise TypeError("'key' must be a callable")
         p = self.clone()
         last = _MISSING
         if key is not _MISSING:
@@ -1755,8 +1760,11 @@ class Pipe:
         -a-b---c-----------d--->
         ```
         """
-        if not callable(key):
-            raise TypeError("'key' must be a callable")
+        match key:
+            case Callable() | Sentinel():
+                pass
+            case _:
+                raise TypeError("'key' must be a callable")
         p = self.clone()
         seen = Seen()
         if key is not _MISSING:
