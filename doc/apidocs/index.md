@@ -94,6 +94,7 @@ seittik.pipes.Pipe.prepend
 seittik.pipes.Pipe.chunk
 seittik.pipes.Pipe.chunkby
 seittik.pipes.Pipe.flatten
+seittik.pipes.Pipe.split
 ```
 
 ### Steps: Ordering

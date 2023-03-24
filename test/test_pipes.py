@@ -969,6 +969,54 @@ def test_pipe_step_slice_start_kwarg():
     assert list(p) == [5, 6, 7, 8, 9, 10]
 
 
+# Pipe.split
+
+def test_pipe_step_split_index_single():
+    p = Pipe('abcdefghij').split(index=5)
+    assert list(p) == [['a', 'b', 'c', 'd', 'e'], ['f', 'g', 'h', 'i', 'j']]
+
+
+def test_pipe_step_split_index_multiple_list():
+    p = Pipe('abcdefghij').split(index=[3, 5, 8])
+    assert list(p) == [['a', 'b', 'c'], ['d', 'e'], ['f', 'g', 'h'], ['i', 'j']]
+
+
+def test_pipe_step_split_index_multiple_set():
+    p = Pipe('abcdefghij').split(index={3, 5, 8})
+    assert list(p) == [['a', 'b', 'c'], ['d', 'e'], ['f', 'g', 'h'], ['i', 'j']]
+
+
+def test_pipe_step_split_index_callable():
+    p = Pipe('abcdefghij').split(index=lambda x: x % 2 == 0)
+    assert list(p) == [['a', 'b'], ['c', 'd'], ['e', 'f'], ['g', 'h'], ['i', 'j']]
+
+
+def test_pipe_step_split_value_single():
+    p = Pipe('abcdefghij').split(value='d')
+    assert list(p) == [['a', 'b', 'c'], ['d', 'e', 'f', 'g', 'h', 'i', 'j']]
+
+
+def test_pipe_step_split_value_multiple_list():
+    p = Pipe('abcdefghij').split(value=['c', 'g'])
+    assert list(p) == [['a', 'b'], ['c', 'd', 'e', 'f'], ['g', 'h', 'i', 'j']]
+
+
+def test_pipe_step_split_value_multiple_set():
+    p = Pipe('abcdefghij').split(value={'c', 'g'})
+    assert list(p) == [['a', 'b'], ['c', 'd', 'e', 'f'], ['g', 'h', 'i', 'j']]
+
+
+def test_pipe_step_split_value_callable():
+    p = Pipe('aBcdefgHij').split(value=str.isupper)
+    assert list(p) == [['a'], ['B', 'c', 'd', 'e', 'f', 'g'], ['H', 'i', 'j']]
+
+
+def test_pipe_step_split_index_invalid():
+    p = Pipe('aBcdefgHij').split(index='meow')
+    with pytest.raises(TypeError):
+        list(p)
+
+
 # Pipe.starmap
 
 def test_pipe_step_starmap():
