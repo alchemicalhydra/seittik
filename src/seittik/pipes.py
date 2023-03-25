@@ -30,6 +30,7 @@ from .utils.classutils import (
     classonlymethod, lazyattr, multimethod, partialclassmethod,
 )
 from .utils.collections import Seen
+from .utils.compareutils import MAXIMUM, MINIMUM
 from .utils.diceutils import DiceRoll
 from .utils.flatten import flatten
 from .utils.randutils import SHARED_RANDOM
@@ -1157,6 +1158,38 @@ class Pipe:
             for _, g in itertools.groupby(res, key):
                 yield tuple(g)
         p._steps.append(pipe_chunkby)
+        return p
+
+    def clamp(self, *args, min=MINIMUM, max=MAXIMUM):
+        """
+        {{pipe_step} Yield values clamped between `min` and `max`.
+
+        - If `min` is provided, any items less than `min` will yield `min`
+          instead.
+        - If `max` is provided, any items greater than `max` will yield `max`
+          instead.
+
+        Accepts `min` and `max` as either positional or keyword arguments. If
+        provided as positional arguments, *both* `min` and `max` must be
+        specified, and *must not* be specified as keyword arguments.
+        """
+        match args:
+            case (_, _) if min is not MINIMUM or max is not MAXIMUM:
+                raise TypeError(f"Cannot specify both positional and keyword arguments for 'min' or 'max'")
+            case (arg_min, arg_max):
+                pass
+            case () if min is MINIMUM and max is MAXIMUM:
+                raise TypeError(f"At least one of 'min' or 'max' must be specified")
+            case ():
+                arg_min = min
+                arg_max = max
+            case _:
+                raise TypeError(f"Either zero or two positional arguments must be provided")
+        p = self.clone()
+        def pipe_clamp(res):
+            for item in res:
+                yield builtins.min(builtins.max(item, arg_min), arg_max)
+        p._steps.append(pipe_clamp)
         return p
 
     def combinations(self, k, *, replacement=False):

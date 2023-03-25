@@ -109,6 +109,7 @@ seittik.pipes.Pipe.sort
 ```{autodoc2-summary}
 seittik.pipes.Pipe.broadcast
 seittik.pipes.Pipe.broadmap
+seittik.pipes.Pipe.clamp
 seittik.pipes.Pipe.dictmap
 seittik.pipes.Pipe.label
 seittik.pipes.Pipe.map
