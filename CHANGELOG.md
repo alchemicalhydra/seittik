@@ -3,6 +3,34 @@
 For full details, see the [commit
 history](https://github.com/alchemicalhydra/seittik/commits/master).
 
+## 2023.03.3 (2023-03-24)
+
+- Add `Pipe.clamp` step
+- Add `Pipe.split` step
+- Add new append/prepend steps:
+  - `Pipe.append`
+  - `Pipe.prepend`
+  - `Pipe.concat`
+  - `Pipe.precat`
+- Add new mapping sources:
+  - `Pipe.keys`
+  - `Pipe.values`
+  - `Pipe.items`
+- **Breaking change:** Rename `Pipe.pack` to `Pipe.struct_pack`
+- **Breaking change:** Rename `Pipe.unpack` to `Pipe.struct_unpack`
+- Fix sentinels to no longer be callables.
+- Fix the license getting Python syntax highlighting on the
+  documentation site.
+- Fix the Ruby cross-reference links to always point to the current Ruby
+  version's docs.
+- Make minor documentation fixes.
+- Poetry settings were changed to undo breakage from upstream changes
+  there.
+  - Details:
+    - https://github.com/python-poetry/poetry/pull/7358
+    - https://github.com/pydata/pydata-sphinx-theme/issues/1253
+- Development dependencies were updated.
+
 ## 2023.03.2 (2023-03-22)
 
 - `Pipe` now supports pluggable random number generators (RNGs), along
