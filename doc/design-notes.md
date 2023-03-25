@@ -496,6 +496,11 @@ adjacent items that have matching keys, without yielding the keys.
 For behavior that groups all elements by a key function regardless of
 their position in the source, see {py:meth}`Pipe.groupby`.
 
+#### {py:meth}`.clamp() <seittik.pipes.Pipe.clamp>`
+
+- {js-ramda}`clamp`
+- {py-pandas-series}`clip`
+
 #### {py:meth}`.combinations() <seittik.pipes.Pipe.combinations>`
 
 - {hs-data-list}`subsequences`

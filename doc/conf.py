@@ -111,6 +111,7 @@ xlinks = {
     'py-itertools': ('https://docs.python.org/3/library/itertools.html#itertools.{v}', "Python itertools: {v}"),
     'py-math': ('https://docs.python.org/3/library/math.html#math.{v}', "Python math: {v}"),
     'py-more-itertools': ('https://more-itertools.readthedocs.io/en/stable/api.html#more_itertools.{v}', "Python more-itertools: {v}"),
+    'py-pandas-series': ('https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.{v}.html', "Python pandas.Series: {v}"),
     'py-pathlib': ('https://docs.python.org/3/library/pathlib.html#pathlib.{v}', "Python pathlib: {v}"),
     'py-random': ('https://docs.python.org/3/library/random.html#random.{v}', "Python random: {v}"),
     'py-statistics': ('https://docs.python.org/3/library/statistics.html#statistics.{v}', "Python statistics: {v}"),

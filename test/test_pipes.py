@@ -720,6 +720,38 @@ def test_pipe_step_chunkby():
     assert list(p) == [(1, 1, 3), (2, 4), (1, 3), (4, 4, 6, 4), (3, 1), (2,)]
 
 
+# Pipe.clamp
+
+def test_pipe_clamp_positional():
+    p = Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).clamp(3, 7)
+    assert list(p) == [3, 3, 3, 4, 5, 6, 7, 7, 7, 7]
+
+
+def test_pipe_clamp_keyword_min():
+    p = Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).clamp(min=3)
+    assert list(p) == [3, 3, 3, 4, 5, 6, 7, 8, 9, 10]
+
+
+def test_pipe_clamp_keyword_max():
+    p = Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).clamp(max=7)
+    assert list(p) == [1, 2, 3, 4, 5, 6, 7, 7, 7, 7]
+
+
+def test_pipe_clamp_bad_n_posargs():
+    with pytest.raises(TypeError):
+        Pipe([]).clamp(4).list()
+
+
+def test_pipe_clamp_bad_arg_combo():
+    with pytest.raises(TypeError):
+        Pipe([]).clamp(4, 9, min=8).list()
+
+
+def test_pipe_clamp_no_args():
+    with pytest.raises(TypeError):
+        Pipe([]).clamp().list()
+
+
 # Pipe.combinations
 
 def test_pipe_step_combinations():
