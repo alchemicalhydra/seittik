@@ -7,6 +7,14 @@ from weakref import WeakKeyDictionary
 __all__ = ()
 
 
+def isinstance_all(objects, cls):
+    """
+    Return true if `isinstance(obj, cls)` is true for all `obj` in iterable
+    `objects`.
+    """
+    return all(isinstance(obj, cls) for obj in objects)
+
+
 class MultiMethodMeta(ABCMeta):
     def __get__(cls, instance, owner=None):
         if instance is None:
