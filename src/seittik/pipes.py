@@ -170,6 +170,11 @@ class Pipe:
         p._source = func
         return p
 
+    def _with_step(self, step):
+        p = self.clone()
+        p._steps.append(step)
+        return p
+
     def _evaluate(self, sink=_MISSING):
         if self._source is _MISSING:
             raise TypeError("A source must be provided to evaluate a Pipe")
@@ -781,11 +786,9 @@ class Pipe:
             {{pipe_step}} Yield all possible ordered tuples of the elements of this
             Pipe's items.
             """
-            p = self.clone()
             def pipe_cartesian_product(res):
                 return itertools.product(*res, repeat=repeat)
-            p._steps.append(pipe_cartesian_product)
-            return p
+            return self._with_step(pipe_cartesian_product)
 
     class chain(multimethod):
         """
@@ -823,11 +826,9 @@ class Pipe:
             """
             {{pipe_step}} Yield from each of this Pipe's items, in order.
             """
-            p = self.clone()
             def pipe_chain(res):
                 return itertools.chain.from_iterable(res)
-            p._steps.append(pipe_chain)
-            return p
+            return self._with_step(pipe_chain)
 
     class interleave(multimethod):
         """
@@ -876,7 +877,6 @@ class Pipe:
             """
             {{pipe_step}} Yield cross-wise from each of this Pipe's items.
             """
-            p = self.clone()
             def pipe_interleave(res):
                 if fair:
                     return itertools.chain.from_iterable(zip(*res))
@@ -887,8 +887,7 @@ class Pipe:
                         )
                         if x is not _MISSING
                     )
-            p._steps.append(pipe_interleave)
-            return p
+            return self._with_step(pipe_interleave)
 
     class struct_unpack(multimethod):
         """
@@ -911,12 +910,10 @@ class Pipe:
             {{pipe_step}} Yield tuples of unpacked bytes from the Pipe's items using
             `format`.
             """
-            p = self.clone()
             def pipe_struct_unpack(res):
                 for item in res:
                     yield struct.unpack(format_, item)
-            p._steps.append(pipe_struct_unpack)
-            return p
+            return self._with_step(pipe_struct_unpack)
 
     class zip(multimethod):
         """
@@ -967,7 +964,6 @@ class Pipe:
 
             The source must be finite, and it will be exhausted upon evaluation.
             """
-            p = self.clone()
             if fillvalue is not _MISSING:
                 if strict:
                     raise TypeError("'fillvalue' and 'strict' are mutually exclusive")
@@ -976,8 +972,7 @@ class Pipe:
             else:
                 def pipe_zip(res):
                     return builtins.zip(*res, strict=strict)
-            p._steps.append(pipe_zip)
-            return p
+            return self._with_step(pipe_zip)
 
     ##############################################################
     # Modify an existing Pipe: intermediate steps
@@ -989,11 +984,9 @@ class Pipe:
         Compare with {py:meth}`Pipe.prepend`, which yields the `items` first,
         and then yields the source's items.
         """
-        p = self.clone()
         def pipe_append(res):
             return itertools.chain(res, items)
-        p._steps.append(pipe_append)
-        return p
+        return self._with_step(pipe_append)
 
     def broadcast(self, n):
         """
@@ -1007,12 +1000,10 @@ class Pipe:
         -2,2----2,2----2,2->
         ```
         """
-        p = self.clone()
         def pipe_broadcast(res):
             for v in res:
                 yield (v,) * n
-        p._steps.append(pipe_broadcast)
-        return p
+        return self._with_step(pipe_broadcast)
 
     def broadmap(self, *funcs):
         """
@@ -1030,12 +1021,10 @@ class Pipe:
             Out[1]: [('1', 1), ('2', 4), ('3', 9)]
         ```
         """
-        p = self.clone()
         def pipe_broadmap(res):
             for v in res:
                 yield tuple(func(v) for func in funcs)
-        p._steps.append(pipe_broadmap)
-        return p
+        return self._with_step(pipe_broadmap)
 
     def chunk(self, n, *, step=_MISSING, fillvalue=_MISSING, fair=False):
         """
@@ -1114,7 +1103,6 @@ class Pipe:
         check_int_positive('n', n)
         step = replace(_MISSING, n, step)
         check_int_positive('step', step)
-        p = self.clone()
         def pipe_chunk(ix):
             chunk = collections.deque(maxlen=n)
             while True:
@@ -1143,8 +1131,7 @@ class Pipe:
                 if fillvalue is not _MISSING:
                     chunk.extend((fillvalue,) * (n - final_chunk_len))
                 yield tuple(chunk)
-        p._steps.append(pipe_chunk)
-        return p
+        return self._with_step(pipe_chunk)
 
     def chunkby(self, key):
         """
@@ -1153,12 +1140,10 @@ class Pipe:
         Contrast with {py:meth}`Pipe.groupby`, which is a sink that groups
         elements into a `dict` by a key function regardless of their position.
         """
-        p = self.clone()
         def pipe_chunkby(res):
             for _, g in itertools.groupby(res, key):
                 yield tuple(g)
-        p._steps.append(pipe_chunkby)
-        return p
+        return self._with_step(pipe_chunkby)
 
     def clamp(self, *args, min=MINIMUM, max=MAXIMUM):
         """
@@ -1185,12 +1170,10 @@ class Pipe:
                 arg_max = max
             case _:
                 raise TypeError(f"Either zero or two positional arguments must be provided")
-        p = self.clone()
         def pipe_clamp(res):
             for item in res:
                 yield builtins.min(builtins.max(item, arg_min), arg_max)
-        p._steps.append(pipe_clamp)
-        return p
+        return self._with_step(pipe_clamp)
 
     def combinations(self, k, *, replacement=False):
         """
@@ -1209,14 +1192,12 @@ class Pipe:
         {py:func}`itertools.combinations_with_replacement`.
         """
         k_min, k_max = check_k_args('k', k, default=_POOL)
-        p = self.clone()
         func = itertools.combinations_with_replacement if replacement else itertools.combinations
         def pipe_combinations(seq):
             i_min, i_max = replace(_POOL, len(seq), k_min, k_max)
             for i in range(i_min, i_max + 1):
                 yield from func(seq, i)
-        p._steps.append(pipe_combinations)
-        return p
+        return self._with_step(pipe_combinations)
 
     def concat(self, *iterables):
         """
@@ -1229,11 +1210,9 @@ class Pipe:
         Contrast with {py:meth}`Pipe.chain`, which treats each source item as a
         sub-iterable to yield items from.
         """
-        p = self.clone()
         def pipe_concat(res):
             return itertools.chain(res, *iterables)
-        p._steps.append(pipe_concat)
-        return p
+        return self._with_step(pipe_concat)
 
     def cycle(self, n=None):
         """
@@ -1251,7 +1230,6 @@ class Pipe:
         ```
         """
         check_int_positive_or_none('n', n)
-        p = self.clone()
         match n:
             case None:
                 def pipe_cycle(res):
@@ -1267,8 +1245,7 @@ class Pipe:
                         cache.append(item)
                     for _ in range(n - 1):
                         yield from cache
-        p._steps.append(pipe_cycle)
-        return p
+        return self._with_step(pipe_cycle)
 
     def debug(self, fmt='{!r}', /):
         """
@@ -1277,13 +1254,11 @@ class Pipe:
 
         `fmt` defaults to `'{!r}'`.
         """
-        p = self.clone()
         def pipe_debug(res):
             for item in res:
                 print(fmt.format(item))
                 yield item
-        p._steps.append(pipe_debug)
-        return p
+        return self._with_step(pipe_debug)
 
     def depeat(self, *, key=_MISSING):
         """
@@ -1311,7 +1286,6 @@ class Pipe:
                 pass
             case _:
                 raise TypeError("'key' must be a callable")
-        p = self.clone()
         last = _MISSING
         if key is not _MISSING:
             def pipe_depeat(res):
@@ -1328,8 +1302,7 @@ class Pipe:
                     if v is not last:
                         yield v
                         last = v
-        p._steps.append(pipe_depeat)
-        return p
+        return self._with_step(pipe_depeat)
 
     def dictmap(self, template=_MISSING, **kwargs):
         """
@@ -1358,12 +1331,10 @@ class Pipe:
         """
         template = replace(_MISSING, {}, template)
         template.update(kwargs)
-        p = self.clone()
         def pipe_dictmap(res):
             for item in res:
                 yield {k: v(item) for k, v in template.items()}
-        p._steps.append(pipe_dictmap)
-        return p
+        return self._with_step(pipe_dictmap)
 
     def drop(self, n=_MISSING):
         """
@@ -1376,11 +1347,9 @@ class Pipe:
         ```
         """
         check_int_zero_or_positive('n', n)
-        p = self.clone()
         def pipe_drop(res):
             return itertools.islice(res, n, None)
-        p._steps.append(pipe_drop)
-        return p
+        return self._with_step(pipe_drop)
 
     def dropwhile(self, pred):
         """
@@ -1389,11 +1358,9 @@ class Pipe:
 
         See {py:func}`itertools.dropwhile`.
         """
-        p = self.clone()
         def pipe_dropwhile(res):
             return itertools.dropwhile(pred, res)
-        p._steps.append(pipe_dropwhile)
-        return p
+        return self._with_step(pipe_dropwhile)
 
     def enumerate(self, start=0):
         """
@@ -1403,11 +1370,9 @@ class Pipe:
 
         Contrast with {py:meth}`Pipe.enumerate_info`.
         """
-        p = self.clone()
         def pipe_enumerate(res):
             return builtins.enumerate(res, start=start)
-        p._steps.append(pipe_enumerate)
-        return p
+        return self._with_step(pipe_enumerate)
 
     def enumerate_info(self, start=0):
         """
@@ -1423,7 +1388,6 @@ class Pipe:
         Contrast with {py:meth}`Pipe.enumerate`.
         """
         check_int('start', start)
-        p = self.clone()
         def pipe_enumerate_info(pipe):
             c = start
             is_first = True
@@ -1432,8 +1396,7 @@ class Pipe:
                 yield (EnumerateInfo(c, is_first=is_first, is_last=is_last), value)
                 is_first = False
                 c += 1
-        p._steps.append(pipe_enumerate_info)
-        return p
+        return self._with_step(pipe_enumerate_info)
 
     def filter(self, func=None):
         """
@@ -1441,11 +1404,9 @@ class Pipe:
 
         See {external:py:func}`filter`.
         """
-        p = self.clone()
         def pipe_filter(res):
             return builtins.filter(func, res)
-        p._steps.append(pipe_filter)
-        return p
+        return self._with_step(pipe_filter)
 
     def flatten(self, levels=_MISSING):
         """
@@ -1471,11 +1432,9 @@ class Pipe:
             Out[1]: ['a', 'b', 'c', ['d', ['e']]]
         ```
         """
-        p = self.clone()
         def pipe_flatten(res):
             return flatten(res, levels=levels)
-        p._steps.append(pipe_flatten)
-        return p
+        return self._with_step(pipe_flatten)
 
     def intersperse(self, sep, n=1, fillvalue=_MISSING):
         """
@@ -1485,7 +1444,6 @@ class Pipe:
         it with `fillvalue`.
         """
         check_int_positive('n', n)
-        p = self.clone()
         def pipe_intersperse(ix):
             yield from itertools.islice(ix, n)
             chunk = collections.deque(maxlen=n)
@@ -1507,19 +1465,16 @@ class Pipe:
                 if fillvalue is not _MISSING:
                     chunk.extend((fillvalue,) * (n - final_chunk_len))
                 yield from chunk
-        p._steps.append(pipe_intersperse)
-        return p
+        return self._with_step(pipe_intersperse)
 
     def label(self, *keys, fillvalue=_MISSING, strict=False):
         """
         {{pipe_step}} Yield dicts representing each of `keys` zipped with each item.
         """
-        p = self.clone()
         def pipe_label(res, cls):
             for item in res:
                 yield cls.zip(keys, item, fillvalue=fillvalue, strict=strict).dict()
-        p._steps.append(pipe_label)
-        return p
+        return self._with_step(pipe_label)
 
     def map(self, func):
         """
@@ -1527,11 +1482,9 @@ class Pipe:
 
         See {external:py:func}`map`.
         """
-        p = self.clone()
         def pipe_map(res):
             return builtins.map(func, res)
-        p._steps.append(pipe_map)
-        return p
+        return self._with_step(pipe_map)
 
     def peek(self):
         """
@@ -1540,7 +1493,6 @@ class Pipe:
         `next_value` is {py:data}`END` (bound to {py:attr}`Pipe.peek.END` as
         well) if the current value is the last one.
         """
-        p = self.clone()
         def pipe_peek(ix):
             try:
                 last_item = next(ix)
@@ -1555,8 +1507,7 @@ class Pipe:
                 else:
                     yield (last_item, next_item)
                     last_item = next_item
-        p._steps.append(pipe_peek)
-        return p
+        return self._with_step(pipe_peek)
     peek.END = END
 
     def permutations(self, k=None):
@@ -1574,13 +1525,11 @@ class Pipe:
         See {py:func}`itertools.permutations`.
         """
         k_min, k_max = check_k_args('k', k, default=_POOL)
-        p = self.clone()
         def pipe_permutations(seq):
             i_min, i_max = replace(_POOL, len(seq), k_min, k_max)
             for i in range(i_min, i_max + 1):
                 yield from itertools.permutations(seq, i)
-        p._steps.append(pipe_permutations)
-        return p
+        return self._with_step(pipe_permutations)
 
     def precat(self, *iterables):
         """
@@ -1593,11 +1542,9 @@ class Pipe:
         Contrast with {py:meth}`Pipe.chain`, which treats each source item as a
         sub-iterable to yield items from.
         """
-        p = self.clone()
         def pipe_precat(res):
             return itertools.chain(*iterables, res)
-        p._steps.append(pipe_precat)
-        return p
+        return self._with_step(pipe_precat)
 
     def prepend(self, *items):
         """
@@ -1607,11 +1554,9 @@ class Pipe:
         Compare with {py:meth}`Pipe.append`, which yields the source's items
         first, and then yields the `items`.
         """
-        p = self.clone()
         def pipe_prepend(res):
             return itertools.chain(items, res)
-        p._steps.append(pipe_prepend)
-        return p
+        return self._with_step(pipe_prepend)
 
     def reject(self, func=None):
         """
@@ -1619,11 +1564,9 @@ class Pipe:
 
         See {external:py:func}`itertools.filterfalse`.
         """
-        p = self.clone()
         def pipe_reject(res):
             return itertools.filterfalse(func, res)
-        p._steps.append(pipe_reject)
-        return p
+        return self._with_step(pipe_reject)
 
     def reverse(self):
         """
@@ -1634,11 +1577,9 @@ class Pipe:
 
         See {external:py:func}`reversed`.
         """
-        p = self.clone()
         def pipe_reverse(seq):
             return reversed(seq)
-        p._steps.append(pipe_reverse)
-        return p
+        return self._with_step(pipe_reverse)
 
     def sample(self, k=None, *, replacement=False):
         """
@@ -1662,15 +1603,13 @@ class Pipe:
         See {external:py:func}`random.sample`.
         """
         k_min, k_max = check_k_args('k', k, default=_POOL)
-        p = self.clone()
         def pipe_sample(seq, rng):
             func = rng.choices if replacement else rng.sample
             i_min, i_max = replace(_POOL, len(seq), k_min, k_max)
             while True:
                 i = i_min if i_min == i_max else rng.randint(i_min, i_max)
                 yield tuple(func(seq, k=i))
-        p._steps.append(pipe_sample)
-        return p
+        return self._with_step(pipe_sample)
 
     def scan(self, func, *, initial=None):
         """
@@ -1680,11 +1619,9 @@ class Pipe:
 
         See {py:func}`itertools.accumulate`.
         """
-        p = self.clone()
         def pipe_scan(res):
             return itertools.accumulate(res, func, initial=initial)
-        p._steps.append(pipe_scan)
-        return p
+        return self._with_step(pipe_scan)
 
     def slice(self, *args, **kwargs):
         """
@@ -1698,11 +1635,9 @@ class Pipe:
         See {py:func}`itertools.islice`.
         """
         start, stop, step = check_slice_args('slice', args, kwargs)
-        p = self.clone()
         def pipe_slice(res):
             return itertools.islice(res, start, stop, step)
-        p._steps.append(pipe_slice)
-        return p
+        return self._with_step(pipe_slice)
 
     def sort(self, *, key=None, reverse=False):
         """
@@ -1715,11 +1650,9 @@ class Pipe:
 
         See {external:py:func}`sorted`.
         """
-        p = self.clone()
         def pipe_sort(res):
             return sorted(res, key=key, reverse=reverse)
-        p._steps.append(pipe_sort)
-        return p
+        return self._with_step(pipe_sort)
 
     def split(self, *, index=_MISSING, value=_MISSING):
         """
@@ -1745,7 +1678,6 @@ class Pipe:
         - If `value` is any other object, a new split will be started if `item ==
           value`.
         """
-        p = self.clone()
         def pipe_split(res):
             target = []
             last = None
@@ -1787,8 +1719,7 @@ class Pipe:
                 target.append(v)
             if target:
                 yield target
-        p._steps.append(pipe_split)
-        return p
+        return self._with_step(pipe_split)
 
     def starmap(self, func):
         """
@@ -1796,11 +1727,9 @@ class Pipe:
 
         See {py:func}`itertools.starmap`.
         """
-        p = self.clone()
         def pipe_starmap(res):
             return itertools.starmap(func, res)
-        p._steps.append(pipe_starmap)
-        return p
+        return self._with_step(pipe_starmap)
 
     def take(self, n):
         """
@@ -1813,11 +1742,9 @@ class Pipe:
         ```
         """
         check_int_zero_or_positive('n', n)
-        p = self.clone()
         def pipe_take(res):
             return itertools.islice(res, None, n)
-        p._steps.append(pipe_take)
-        return p
+        return self._with_step(pipe_take)
 
     def takewhile(self, pred):
         """
@@ -1826,24 +1753,20 @@ class Pipe:
 
         See {py:func}`itertools.takewhile`.
         """
-        p = self.clone()
         def pipe_takewhile(res):
             return itertools.takewhile(pred, res)
-        p._steps.append(pipe_takewhile)
-        return p
+        return self._with_step(pipe_takewhile)
 
     def tap(self, func):
         """
         {{pipe_step}} For each item, call `func(item)` as a side effect
         and yield the item unchanged.
         """
-        p = self.clone()
         def pipe_tap(res):
             for item in res:
                 func(item)
                 yield item
-        p._steps.append(pipe_tap)
-        return p
+        return self._with_step(pipe_tap)
 
     def unique(self, /, key=_MISSING):
         """
@@ -1869,7 +1792,6 @@ class Pipe:
                 pass
             case _:
                 raise TypeError("'key' must be a callable")
-        p = self.clone()
         seen = Seen()
         if key is not _MISSING:
             def pipe_unique(res):
@@ -1882,8 +1804,7 @@ class Pipe:
                 for v in res:
                     if v not in seen:
                         yield v
-        p._steps.append(pipe_unique)
-        return p
+        return self._with_step(pipe_unique)
 
     ##############################################################
     # Sinks: non-container results
