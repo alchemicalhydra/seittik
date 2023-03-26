@@ -1160,16 +1160,16 @@ class Pipe:
         """
         match args:
             case (_, _) if min is not MINIMUM or max is not MAXIMUM:
-                raise TypeError(f"Cannot specify both positional and keyword arguments for 'min' or 'max'")
+                raise TypeError("Cannot specify both positional and keyword arguments for 'min' or 'max'")
             case (arg_min, arg_max):
                 pass
             case () if min is MINIMUM and max is MAXIMUM:
-                raise TypeError(f"At least one of 'min' or 'max' must be specified")
+                raise TypeError("At least one of 'min' or 'max' must be specified")
             case ():
                 arg_min = min
                 arg_max = max
             case _:
-                raise TypeError(f"Either zero or two positional arguments must be provided")
+                raise TypeError("Either zero or two positional arguments must be provided")
         def pipe_clamp(res):
             for item in res:
                 yield builtins.min(builtins.max(item, arg_min), arg_max)
