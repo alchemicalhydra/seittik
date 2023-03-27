@@ -72,6 +72,7 @@ seittik.pipes.Pipe.dropwhile
 seittik.pipes.Pipe.filter
 seittik.pipes.Pipe.reject
 seittik.pipes.Pipe.slice
+seittik.pipes.Pipe.sponge
 seittik.pipes.Pipe.take
 seittik.pipes.Pipe.takewhile
 seittik.pipes.Pipe.unique

@@ -1721,6 +1721,19 @@ class Pipe:
                 yield target
         return self._with_step(pipe_split)
 
+    def sponge(self, sink):
+        """
+        {{pipe_step}} Evaluate the Pipe up to this point using `sink`, and
+        continue the pipe yielding its single result.
+
+        `sink` can either be a `Pipe` sink method called as a classmethod (e.g.,
+        `Pipe.sum()`), or any function that accepts an iterable and returns a
+        single result (e.g., `sum`).
+        """
+        def pipe_sponge(res):
+            yield sink(res)
+        return self._with_step(pipe_sponge)
+
     def starmap(self, func):
         """
         {{pipe_step}} For each item, yield `func(*item)`.
