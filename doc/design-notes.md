@@ -954,6 +954,12 @@ For behavior that only groups adjacent elements, see
 - {js-ramda}`median`
 - {py-statistics}`median`
 
+#### {py:meth}`.merge() <seittik.pipes.Pipe.merge>`
+
+- {js-ramda}`mergeDeepLeft`
+- {js-ramda}`mergeDeepRight`
+- {js-ramda}`mergeDeepWith`
+
 #### {py:meth}`.min() <seittik.pipes.Pipe.min>`
 
 - {clj-medley}`least`

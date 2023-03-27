@@ -33,6 +33,7 @@ from .utils.collections import Seen
 from .utils.compareutils import MAXIMUM, MINIMUM
 from .utils.diceutils import DiceRoll
 from .utils.flatten import flatten
+from .utils.merge import merge
 from .utils.randutils import SHARED_RANDOM
 from .utils.sentinels import _END, _MISSING, _POOL, Sentinel
 from .utils.structutils import calc_struct_input
@@ -2043,6 +2044,55 @@ class Pipe:
                     return default
                 raise
         return self._evaluate(sink=pipe_median)
+
+    @partialclassmethod
+    def merge(self, /, *, sequence='replace'):
+        """
+        {{pipe_sink}} Recursively merge this Pipe's mapping items into a single
+        mapping.
+
+        All collections in the resulting mapping are deep-copied and thus safe
+        to mutate without affecting the original arguments.
+
+        Values are handled as follows:
+
+        - Mappings are merged with mappings, with identical keys being
+          overwritten.
+
+        - A mapping is entirely replaced by a non-mapping, and vice-versa.
+
+        - A sequence with the same path as an existing sequence uses the
+          `sequence` argument to determine how to handle it:
+
+          - `'replace'` (the default) replaces the old sequence with the new
+            sequence.
+
+          - `'keep'` keeps the old sequence and discards the new sequence.
+
+          - `'extend-old-new'` replaces the old sequence with a concatenation of the
+            old sequence followed by the new sequence.
+
+          - `'extend-new-old'` replaces the old sequence with a concatenation of the
+            new sequence followed by the old sequence.
+
+          - `'overlay-old-new'` replaces the old sequence with the result of
+            replacing the beginning of the old sequence with the corresponding items
+            from the new sequence. (If the new sequence is as long or longer than
+            the old sequence, this is equivalent to `'replace'`.)
+
+          - `'overlay-new-old'` replaces the old sequence with the result of
+            replacing the beginning of the new sequence with the corresponding items
+            from the old sequence. (If the old sequence is as long or longer than
+            the new sequence, this is equivalent to `'keep'`.)
+
+          - A custom callable can be provided, which will be used to merge the
+            sequences. It should accept two positional arguments: `old_sequence,
+            new_sequence`, and return an appropriate item. (It is safe to return an
+            argument from a `sequence` callable unchanged or mutated.)
+        """
+        def pipe_merge(res):
+            return merge(res, sequence=sequence)
+        return self._evaluate(sink=pipe_merge)
 
     @partialclassmethod
     def min(self, *, default=_MISSING, key=None):
