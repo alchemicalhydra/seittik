@@ -1401,6 +1401,13 @@ def test_pipe_sink_median_empty_default():
     assert p.median(default='meow') == 'meow'
 
 
+# Pipe.merge
+
+def test_pipe_merge():
+    p = Pipe([{'a': 1, 'b': 2}, {'b': 3, 'c': 4}])
+    assert p.merge() == {'a': 1, 'b': 3, 'c': 4}
+
+
 # Pipe.min
 
 def test_pipe_sink_min():

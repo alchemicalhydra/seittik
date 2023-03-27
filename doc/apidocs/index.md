@@ -207,6 +207,7 @@ seittik.pipes.Pipe.partition
 seittik.pipes.Pipe.count
 seittik.pipes.Pipe.exhaust
 seittik.pipes.Pipe.fold
+seittik.pipes.Pipe.merge
 seittik.pipes.Pipe.nth
 seittik.pipes.Pipe.struct_pack
 ```
