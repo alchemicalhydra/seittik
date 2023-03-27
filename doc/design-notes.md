@@ -731,6 +731,11 @@ I prefer verb names over adjectives.
 
 Can split based on indexes, matching values, or callables.
 
+#### {py:meth}`.sponge() <seittik.pipes.Pipe.sponge>`
+
+Allows "soaking up" a Pipe's items via a sink and yielding the result as
+a new item within the Pipe.
+
 #### {py:meth}`.starmap() <seittik.pipes.Pipe.starmap>`
 
 - {py-itertools}`starmap`

@@ -1049,6 +1049,23 @@ def test_pipe_step_split_index_invalid():
         list(p)
 
 
+# Pipe.sponge
+
+def test_pipe_sponge():
+    p = Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).sponge(Pipe.sum())
+    assert list(p) == [55]
+
+
+def test_pipe_sponge_raw_sinklike():
+    p = Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).sponge(sum)
+    assert list(p) == [55]
+
+
+def test_pipe_sponge_map():
+    p = Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).sponge(Pipe.sum()).map(lambda x: x * 2)
+    assert list(p) == [110]
+
+
 # Pipe.starmap
 
 def test_pipe_step_starmap():
