@@ -104,6 +104,7 @@ xlinks = {
     'js-ramda': ('https://ramdajs.com/docs/#{v}', "JavaScript: Ramda: {v}"),
     'kt-collections': _fix_kt('https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/{v}.html', "Kotlin collections: {v}"),
     'kt-sequences': _fix_kt('https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.sequences/{v}.html', "Kotlin sequences: {v}"),
+    'mdb-agg': ('https://www.mongodb.com/docs/manual/reference/operator/aggregation/{v}/', "MongoDB aggregation ops: ${v}"),
     'py-array': ('https://docs.python.org/3/library/array.html#array.{v}', "Python array: {v}"),
     'py-builtins': _fix_py_builtins('https://docs.python.org/3/library/functions.html#{v}', "Python builtins: {v}"),
     'py-collections': ('https://docs.python.org/3/library/collections.html#collections.{v}', "Python collections: {v}"),

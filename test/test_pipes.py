@@ -1,3 +1,5 @@
+import itertools
+
 import pytest
 
 from seittik.pipes import END, Pipe
@@ -958,6 +960,104 @@ def test_pipe_step_prepend_2():
 def test_pipe_step_reject():
     p = Pipe([1, 2, 3, 4, 5]).reject(lambda x: x % 2 == 0)
     assert list(p) == [1, 3, 5]
+
+
+# Pipe.remap
+
+def test_pipe_step_remap_bad_input():
+    p = Pipe([1]).remap('a')
+    with pytest.raises(TypeError, match='not a mapping'):
+        list(p)
+
+
+def test_pipe_step_remap_bad_arg():
+    p = Pipe([{'a': 1}]).remap(13)
+    with pytest.raises(TypeError, match='Invalid type for remap arg'):
+        list(p)
+
+
+def _remap_from_str(d):
+    return [
+        (d, [t[0] for t in x], dict(x))
+        for x in itertools.chain.from_iterable(
+            itertools.combinations(d.items(), r=i) for i in range(len(d) + 1)
+        )
+    ]
+
+
+@pytest.mark.parametrize(
+    ['original', 'args', 'result'],
+    _remap_from_str({'a': 1, 'b': 2, 'c': 3}),
+)
+def test_pipe_step_remap_string_args(original, args, result):
+    p = Pipe([original]).remap(*args)
+    assert list(p) == [result]
+
+
+def test_pipe_step_remap_ellipsis():
+    p = Pipe([
+        {'a': 1, 'b': 2, 'c': 3},
+        {'b': 4, 'c': 5, 'd': 6},
+        {'c': 7, 'd': 8, 'e': 9},
+    ]).remap(
+        ...,
+        'c',
+        {'b': Pipe.DROP},
+        d=Pipe.DROP,
+        f=lambda x: Pipe.DROP,
+    )
+    assert list(p) == [{'a': 1, 'c': 3}, {'c': 5}, {'c': 7, 'e': 9}]
+
+
+def test_pipe_step_remap_tuple_args():
+    p = Pipe([{'a': 1}]).remap(('a', 5), ('b', 8))
+    assert list(p) == [{'a': 1, 'b': 8}]
+
+
+def test_pipe_step_remap_callable_args():
+    p = Pipe([{'a': 3}]).remap(lambda x: {'a': x['a'] * 2, 'b': 13})
+    assert list(p) == [{'a': 6, 'b': 13}]
+
+
+def test_pipe_step_remap_mapping_swap():
+    p = Pipe([{'a': 1, 'b': 2, 'c': 3}]).remap({'a': 'b', 'b': 'c', 'c': 'a'})
+    assert list(p) == [{'a': 2, 'b': 3, 'c': 1}]
+
+
+def test_pipe_step_remap_mapping_swap_defaults():
+    p = Pipe([{'a': 1, 'b': 2, 'c': 3}]).remap({'a': ('b', 7), 'b': 'c', 'c': 'a', 'd': ('a', 8), 'e': ('g', 9)})
+    assert list(p) == [{'a': 2, 'b': 3, 'c': 1, 'd': 1, 'e': 9}]
+
+
+def test_pipe_step_remap_mapping_drop_keep():
+    p = Pipe([{'a': 1, 'b': 2, 'c': 3, 'd': 4}]).remap({'a': Pipe.DROP, 'b': Pipe.KEEP, 'c': Pipe.KEEP, 'd': Pipe.DROP})
+    assert list(p) == [{'b': 2, 'c': 3}]
+
+
+def test_pipe_step_remap_mapping_callables():
+    p = (
+        Pipe([{'a': 1, 'b': 2, 'c': 3, 'd': 4}])
+        .remap({'a': lambda a: a * 3, 'b': lambda b: b * 5, 'c': lambda c: Pipe.DROP, 'd': lambda d: Pipe.KEEP, 'e': lambda item: 17})
+    )
+    assert list(p) == [{'a': 3, 'b': 10, 'd': 4, 'e': 17}]
+
+
+def test_pipe_step_remap_mapping_callables_bad_keep():
+    p = (
+        Pipe([{'a': 1, 'b': 2, 'c': 3, 'd': 4}])
+        .remap({'e': lambda d: Pipe.KEEP})
+    )
+    with pytest.raises(TypeError, match='KEEP cannot be'):
+        list(p)
+
+
+def test_pipe_step_remap_mapping_callables_bad_remap_value():
+    p = (
+        Pipe([{'a': 1, 'b': 2, 'c': 3, 'd': 4}])
+        .remap({'a': 13})
+    )
+    with pytest.raises(TypeError, match='Invalid type for remap'):
+        list(p)
 
 
 # Pipe.sample
