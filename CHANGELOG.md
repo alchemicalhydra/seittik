@@ -3,6 +3,14 @@
 For full details, see the [commit
 history](https://github.com/alchemicalhydra/seittik/commits/master).
 
+## 2023.03.4 (2023-03-28)
+
+- Add `Pipe.remap` step
+- Add `Pipe.sponge` step
+- Add `Pipe.merge` sink
+- Add various internal helpers and reduce boilerplate code.
+- Minor cleanups/fixes.
+
 ## 2023.03.3 (2023-03-24)
 
 - Add `Pipe.clamp` step
