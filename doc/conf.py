@@ -212,6 +212,29 @@ mermaid_init_js = ''
 ########################################################################
 # Unspeakable Horrors
 
+_WHITELISTED_EVAL_RST_DIRECTIVES = {
+    'ipython',
+}
+
+# Monkey-patch DocutilsRenderer to allow us to bypass `{eval-rst}` for
+# whitelisted directives
+def _monkey_patch_docutils_renderer():
+    from myst_parser.mdit_to_docutils.base import DocutilsRenderer
+    docutils_renderer_render_directive = DocutilsRenderer.render_directive
+    @wraps(DocutilsRenderer.render_directive)
+    def render_directive(self, token, name, arguments, *, additional_options=None):
+        if name in _WHITELISTED_EVAL_RST_DIRECTIVES:
+            directive_header_line = f".. {name}::{f' {arguments}' if arguments else ''}\n"
+            token.token.content = ''.join([
+                directive_header_line,
+                *[f"{'    ' if line else ''}{line}\n" for line in token.content.splitlines()],
+            ])
+            return self.render_restructuredtext(token)
+        return docutils_renderer_render_directive(self, token, name, arguments, additional_options=additional_options)
+    DocutilsRenderer.render_directive = render_directive
+_monkey_patch_docutils_renderer()
+
+
 # Monkey-patch IPythonDirective to allow us to reset counts
 def _monkey_patch_ipython_directive():
     from IPython.sphinxext.ipython_directive import IPythonDirective
