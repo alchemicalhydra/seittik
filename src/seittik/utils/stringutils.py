@@ -25,47 +25,46 @@ def conjoin_phrases(phrases, conj='or', fmt=_MISSING):
             {conj} {third}`.
           - Otherwise return, e.g., `{first}, {second}, {third}`.
 
-    ```{eval-rst}
-    .. ipython::
+    ```{ipython}
 
-        In [1]: conjoin_phrases([])
-        Out[1]: ''
+    In [1]: conjoin_phrases([])
+    Out[1]: ''
 
-        In [1]: conjoin_phrases(['a'])
-        Out[1]: 'a'
+    In [1]: conjoin_phrases(['a'])
+    Out[1]: 'a'
 
-        In [1]: conjoin_phrases(['a', 'b'])
-        Out[1]: 'a or b'
+    In [1]: conjoin_phrases(['a', 'b'])
+    Out[1]: 'a or b'
 
-        In [1]: conjoin_phrases(['a', 'b'], conj='and')
-        Out[1]: 'a and b'
+    In [1]: conjoin_phrases(['a', 'b'], conj='and')
+    Out[1]: 'a and b'
 
-        In [1]: conjoin_phrases(['a', 'b'], conj='')
-        Out[1]: 'a, b'
+    In [1]: conjoin_phrases(['a', 'b'], conj='')
+    Out[1]: 'a, b'
 
-        In [1]: conjoin_phrases(['a', 'b', 'c'])
-        Out[1]: 'a, b, or c'
+    In [1]: conjoin_phrases(['a', 'b', 'c'])
+    Out[1]: 'a, b, or c'
 
-        In [1]: conjoin_phrases(['a', 'b', 'c'], conj='and')
-        Out[1]: 'a, b, and c'
+    In [1]: conjoin_phrases(['a', 'b', 'c'], conj='and')
+    Out[1]: 'a, b, and c'
 
-        In [1]: conjoin_phrases(['a', 'b', 'c'], conj='')
-        Out[1]: 'a, b, c'
+    In [1]: conjoin_phrases(['a', 'b', 'c'], conj='')
+    Out[1]: 'a, b, c'
 
-        In [1]: conjoin_phrases(['a', 'b', 'c', 'd'])
-        Out[1]: 'a, b, c, or d'
+    In [1]: conjoin_phrases(['a', 'b', 'c', 'd'])
+    Out[1]: 'a, b, c, or d'
 
-        In [1]: conjoin_phrases(['a', 'b'], fmt=repr)
-        Out[1]: "'a' or 'b'"
+    In [1]: conjoin_phrases(['a', 'b'], fmt=repr)
+    Out[1]: "'a' or 'b'"
 
-        In [1]: conjoin_phrases(['a', 'b'], fmt='{!r}')
-        Out[1]: "'a' or 'b'"
+    In [1]: conjoin_phrases(['a', 'b'], fmt='{!r}')
+    Out[1]: "'a' or 'b'"
 
-        In [1]: conjoin_phrases(['a', 'b'], fmt='FOO{}BAR')
-        Out[1]: "'FOOaBAR' or 'FOObBAR'"
+    In [1]: conjoin_phrases(['a', 'b'], fmt='FOO{}BAR')
+    Out[1]: "'FOOaBAR' or 'FOObBAR'"
 
-        In [1]: conjoin_phrases(['a', 'b', 'c', 'd'], conj='and', fmt=repr)
-        Out[1]: "'a', 'b', 'c', and 'd'"
+    In [1]: conjoin_phrases(['a', 'b', 'c', 'd'], conj='and', fmt=repr)
+    Out[1]: "'a', 'b', 'c', and 'd'"
     ```
     """
     match fmt:

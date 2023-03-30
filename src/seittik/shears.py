@@ -6,19 +6,18 @@ is applied to it.
 
 A shear can be used to succinctly replace `lambda` in many cases.
 
-```{eval-rst}
-.. ipython::
-    :reset_history:
+```{ipython}
+:reset_history:
 
-    In [1]: from seittik.shears import ShearVar
+In [1]: from seittik.shears import ShearVar
 
-    In [1]: X = ShearVar('X')
+In [1]: X = ShearVar('X')
 
-    In [1]: X
-    Out[1]: <ShearVar X>
+In [1]: X
+Out[1]: <ShearVar X>
 
-    In [1]: list(map(X * 3, [1, 2, 3, 4, 5]))
-    Out[1]: [3, 6, 9, 12, 15]
+In [1]: list(map(X * 3, [1, 2, 3, 4, 5]))
+Out[1]: [3, 6, 9, 12, 15]
 ```
 
 Shears compose with one another as well, to arbitrary depth.
@@ -26,42 +25,41 @@ Shears compose with one another as well, to arbitrary depth.
 Any shear created with the same name is treated identically; otherwise
 they are treated as separate parameters to a partial function.
 
-```{eval-rst}
-.. ipython::
-    :reset_history:
+```{ipython}
+:reset_history:
 
-    In [1]: from functools import reduce
+In [1]: from functools import reduce
 
-    In [1]: from seittik.shears import ShearVar
+In [1]: from seittik.shears import ShearVar
 
-    In [1]: X = ShearVar('X')
+In [1]: X = ShearVar('X')
 
-    In [1]: X
-    Out[1]: <ShearVar X>
+In [1]: X
+Out[1]: <ShearVar X>
 
-    In [1]: double = X + X
+In [1]: double = X + X
 
-    In [1]: double
-    Out[1]: <ShearBinOp X + X>
+In [1]: double
+Out[1]: <ShearBinOp X + X>
 
-    In [1]: double(5)
-    Out[1]: 10
+In [1]: double(5)
+Out[1]: 10
 
-    In [1]: Y = ShearVar('Y')
+In [1]: Y = ShearVar('Y')
 
-    In [1]: Y
-    Out[1]: <ShearVar Y>
+In [1]: Y
+Out[1]: <ShearVar Y>
 
-    In [1]: reduce(X + Y, [1, 2, 3, 4, 5])
-    Out[1]: 15
+In [1]: reduce(X + Y, [1, 2, 3, 4, 5])
+Out[1]: 15
 
-    In [1]: f = X + X / Y + Y
+In [1]: f = X + X / Y + Y
 
-    In [1]: f
-    Out[1]: <ShearBinOp (X + (X / Y)) + Y>
+In [1]: f
+Out[1]: <ShearBinOp (X + (X / Y)) + Y>
 
-    In [1]: f(6, 3)
-    Out[1]: 11.0
+In [1]: f(6, 3)
+Out[1]: 11.0
 ```
 
 Shears are much more powerful when combined with *pipes*; see

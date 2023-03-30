@@ -107,18 +107,17 @@ class Pipe:
     Similarly, all sinks act as partials if called as class methods,
     accepting a source which will be immediately evaluated.
 
-    ```{eval-rst}
-    .. ipython::
+    ```{ipython}
 
-        # All of these are equivalent:
-        In [1]: Pipe([1, 2, 3, 4, 5]).list()
-        Out[1]: [1, 2, 3, 4, 5]
+    # All of these are equivalent:
+    In [1]: Pipe([1, 2, 3, 4, 5]).list()
+    Out[1]: [1, 2, 3, 4, 5]
 
-        In [1]: Pipe()([1, 2, 3, 4, 5]).list()
-        Out[1]: [1, 2, 3, 4, 5]
+    In [1]: Pipe()([1, 2, 3, 4, 5]).list()
+    Out[1]: [1, 2, 3, 4, 5]
 
-        In [1]: Pipe.list()([1, 2, 3, 4, 5])
-        Out[1]: [1, 2, 3, 4, 5]
+    In [1]: Pipe.list()([1, 2, 3, 4, 5])
+    Out[1]: [1, 2, 3, 4, 5]
     ```
     """
     DROP = _DROP
@@ -362,13 +361,12 @@ class Pipe:
         Contrast with {py:meth}`Pipe.repeatfunc`, which simply calls `func` with
         supplied arguments forever.
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            In [1]: add1 = lambda x: x + 1
+        In [1]: add1 = lambda x: x + 1
 
-            In [1]: Pipe.iterfunc(add1, 13).take(5).list()
-            Out[1]: [13, 14, 15, 16, 17]
+        In [1]: Pipe.iterfunc(add1, 13).take(5).list()
+        Out[1]: [13, 14, 15, 16, 17]
         ```
 
         ```{marble}
@@ -434,14 +432,13 @@ class Pipe:
 
         As with {py:meth}`Pipe.range`, `stop` is inclusive, not exclusive.
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            @suppress
-            In [1]: import random; random.seed(0)
+        @suppress
+        In [1]: import random; random.seed(0)
 
-            In [1]: Pipe.randrange(1, 6).take(5).list()
-            Out[1]: [4, 4, 1, 3, 5]
+        In [1]: Pipe.randrange(1, 6).take(5).list()
+        Out[1]: [4, 4, 1, 3, 5]
         ```
 
         ```{marble}
@@ -485,14 +482,13 @@ class Pipe:
         Note that `stop` is *inclusive*; see `Pipe.rangetil` for an exclusive
         `stop`.
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            In [1]: Pipe.range(10).list()
-            Out[1]: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        In [1]: Pipe.range(10).list()
+        Out[1]: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-            In [1]: Pipe.range(1, 10).list()
-            Out[1]: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        In [1]: Pipe.range(1, 10).list()
+        Out[1]: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         ```
         """
         start, stop, step = check_slice_args('range', args, kwargs)
@@ -532,14 +528,13 @@ class Pipe:
         Note that `stop` is *exclusive*; see `Pipe.range` for an inclusive
         `stop`.
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            In [1]: Pipe.rangetil(10).list()
-            Out[1]: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        In [1]: Pipe.rangetil(10).list()
+        Out[1]: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-            In [1]: Pipe.rangetil(1, 10).list()
-            Out[1]: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        In [1]: Pipe.rangetil(1, 10).list()
+        Out[1]: [1, 2, 3, 4, 5, 6, 7, 8, 9]
         ```
         """
         start, stop, step = check_slice_args('rangetil', args, kwargs)
@@ -560,11 +555,10 @@ class Pipe:
 
         See {py:meth}`Pipe.cycle` to repeat an iterable of values, instead.
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            In [1]: Pipe.repeat('meow').take(5).list()
-            Out[1]: ['meow', 'meow', 'meow', 'meow', 'meow']
+        In [1]: Pipe.repeat('meow').take(5).list()
+        Out[1]: ['meow', 'meow', 'meow', 'meow', 'meow']
         ```
 
         ```{marble}
@@ -586,20 +580,19 @@ class Pipe:
         Contrast with {py:meth}`Pipe.iterfunc`, which starts with a seed value
         and passes the previous result into the next function call, instead.
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            @suppress
-            In [1]: import random; random.seed(0)
+        @suppress
+        In [1]: import random; random.seed(0)
 
-            In [1]: Pipe.repeatfunc(int, 6).take(5).list()
-            Out[1]: [6, 6, 6, 6, 6]
+        In [1]: Pipe.repeatfunc(int, 6).take(5).list()
+        Out[1]: [6, 6, 6, 6, 6]
 
-            In [1]: Pipe.repeatfunc(dict, a=1, b=2).take(2).list()
-            Out[1]: [{'a': 1, 'b': 2}, {'a': 1, 'b': 2}]
+        In [1]: Pipe.repeatfunc(dict, a=1, b=2).take(2).list()
+        Out[1]: [{'a': 1, 'b': 2}, {'a': 1, 'b': 2}]
 
-            In [1]: Pipe.repeatfunc(random.randint, 1, 6).take(5).list()
-            Out[1]: [4, 4, 1, 3, 5]
+        In [1]: Pipe.repeatfunc(random.randint, 1, 6).take(5).list()
+        Out[1]: [4, 4, 1, 3, 5]
         ```
         """
         def pipe_repeatfunc():
@@ -624,20 +617,19 @@ class Pipe:
         - Three integers, e.g., `3`, `6`, and `2` for the result of rolling
           three six-sided dice and then adding two to that result.
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            @suppress
-            In [1]: import random; random.seed(0)
+        @suppress
+        In [1]: import random; random.seed(0)
 
-            In [1]: Pipe.roll(10).take(3).list()
-            Out[1]: [7, 7, 1]
+        In [1]: Pipe.roll(10).take(3).list()
+        Out[1]: [7, 7, 1]
 
-            In [1]: Pipe.roll(3, 6).take(6).list()
-            Out[1]: [12, 11, 10, 10, 8, 14]
+        In [1]: Pipe.roll(3, 6).take(6).list()
+        Out[1]: [12, 11, 10, 10, 8, 14]
 
-            In [1]: Pipe.roll('1d12+3').take(1).list()
-            Out[1]: [13]
+        In [1]: Pipe.roll('1d12+3').take(1).list()
+        Out[1]: [13]
         ```
         """
         def pipe_roll(rng):
@@ -657,13 +649,12 @@ class Pipe:
 
         This is the dual operation of {py:meth}`Pipe.fold`.
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            In [1]: build_pow2 = lambda x: (x, x * 2)
+        In [1]: build_pow2 = lambda x: (x, x * 2)
 
-            In [1]: Pipe.unfold(build_pow2, 2).take(6).list()
-            Out[1]: [2, 4, 8, 16, 32, 64]
+        In [1]: Pipe.unfold(build_pow2, 2).take(6).list()
+        Out[1]: [2, 4, 8, 16, 32, 64]
         ```
 
         ```{marble}
@@ -805,11 +796,10 @@ class Pipe:
 
         See {py:func}`itertools.chain`.
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            In [1]: Pipe.chain('abc', 'def', 'ghi').list()
-            Out[1]: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
+        In [1]: Pipe.chain('abc', 'def', 'ghi').list()
+        Out[1]: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
         ```
 
         ```{marble}
@@ -847,11 +837,10 @@ class Pipe:
         :param bool fair: If true, stop after the shortest iterable is
         exhausted; otherwise, keep yielding until all are exhausted.
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            In [1]: Pipe.interleave('abc', 'def', 'ghi').list()
-            Out[1]: ['a', 'd', 'g', 'b', 'e', 'h', 'c', 'f', 'i']
+        In [1]: Pipe.interleave('abc', 'def', 'ghi').list()
+        Out[1]: ['a', 'd', 'g', 'b', 'e', 'h', 'c', 'f', 'i']
         ```
 
         ```{marble}
@@ -1021,11 +1010,10 @@ class Pipe:
 
         Compare with {py:meth}`Pipe.dictmap`.
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            In [1]: Pipe([1, 2, 3]).broadmap(str, lambda x: x * x).list()
-            Out[1]: [('1', 1), ('2', 4), ('3', 9)]
+        In [1]: Pipe([1, 2, 3]).broadmap(str, lambda x: x * x).list()
+        Out[1]: [('1', 1), ('2', 4), ('3', 9)]
         ```
         """
         def pipe_broadmap(res):
@@ -1047,62 +1035,61 @@ class Pipe:
         If `fair` is true and the final chunk is smaller than `n`, it will be
         dropped, otherwise it will be yielded as-is.
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            # Standard chunks:
-            In [1]: Pipe('abcdef').chunk(2).list()
-            Out[1]: [('a', 'b'), ('c', 'd'), ('e', 'f')]
+        # Standard chunks:
+        In [1]: Pipe('abcdef').chunk(2).list()
+        Out[1]: [('a', 'b'), ('c', 'd'), ('e', 'f')]
 
-            # Equivalent, since step defaults to n
-            In [1]: Pipe('abcdef').chunk(2, step=2).list()
-            Out[1]: [('a', 'b'), ('c', 'd'), ('e', 'f')]
+        # Equivalent, since step defaults to n
+        In [1]: Pipe('abcdef').chunk(2, step=2).list()
+        Out[1]: [('a', 'b'), ('c', 'd'), ('e', 'f')]
 
-            In [1]: Pipe('abcdef').chunk(3).list()
-            Out[1]: [('a', 'b', 'c'), ('d', 'e', 'f')]
+        In [1]: Pipe('abcdef').chunk(3).list()
+        Out[1]: [('a', 'b', 'c'), ('d', 'e', 'f')]
 
-            In [1]: Pipe('abcde').chunk(2).list()
-            Out[1]: [('a', 'b'), ('c', 'd'), ('e',)]
+        In [1]: Pipe('abcde').chunk(2).list()
+        Out[1]: [('a', 'b'), ('c', 'd'), ('e',)]
 
-            In [1]: Pipe('abcde').chunk(2, fair=True).list()
-            Out[1]: [('a', 'b'), ('c', 'd')]
+        In [1]: Pipe('abcde').chunk(2, fair=True).list()
+        Out[1]: [('a', 'b'), ('c', 'd')]
 
-            In [1]: Pipe('abcde').chunk(2, fillvalue='x').list()
-            Out[1]: [('a', 'b'), ('c', 'd'), ('e', 'x')]
+        In [1]: Pipe('abcde').chunk(2, fillvalue='x').list()
+        Out[1]: [('a', 'b'), ('c', 'd'), ('e', 'x')]
 
-            In [1]: Pipe('abcde').chunk(3, fillvalue='x').list()
-            Out[1]: [('a', 'b', 'c'), ('d', 'e', 'x')]
+        In [1]: Pipe('abcde').chunk(3, fillvalue='x').list()
+        Out[1]: [('a', 'b', 'c'), ('d', 'e', 'x')]
 
-            In [1]: Pipe('abcde').chunk(3).list()
-            Out[1]: [('a', 'b', 'c'), ('d', 'e')]
+        In [1]: Pipe('abcde').chunk(3).list()
+        Out[1]: [('a', 'b', 'c'), ('d', 'e')]
 
-            In [1]: Pipe('abcde').chunk(3, fair=True).list()
-            Out[1]: [('a', 'b', 'c')]
+        In [1]: Pipe('abcde').chunk(3, fair=True).list()
+        Out[1]: [('a', 'b', 'c')]
 
-            # Sliding windows
-            In [1]: Pipe('abc').chunk(2, step=1).list()
-            Out[1]: [('a', 'b'), ('b', 'c')]
+        # Sliding windows
+        In [1]: Pipe('abc').chunk(2, step=1).list()
+        Out[1]: [('a', 'b'), ('b', 'c')]
 
-            In [1]: Pipe('abcde').chunk(2, step=1).list()
-            Out[1]: [('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'e')]
+        In [1]: Pipe('abcde').chunk(2, step=1).list()
+        Out[1]: [('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'e')]
 
-            In [1]: Pipe('abcde').chunk(3, step=1).list()
-            Out[1]: [('a', 'b', 'c'), ('b', 'c', 'd'), ('c', 'd', 'e')]
+        In [1]: Pipe('abcde').chunk(3, step=1).list()
+        Out[1]: [('a', 'b', 'c'), ('b', 'c', 'd'), ('c', 'd', 'e')]
 
-            In [1]: Pipe('abc').chunk(2, step=3).list()
-            Out[1]: [('a', 'b')]
+        In [1]: Pipe('abc').chunk(2, step=3).list()
+        Out[1]: [('a', 'b')]
 
-            In [1]: Pipe('abcd').chunk(2, step=3).list()
-            Out[1]: [('a', 'b'), ('d',)]
+        In [1]: Pipe('abcd').chunk(2, step=3).list()
+        Out[1]: [('a', 'b'), ('d',)]
 
-            In [1]: Pipe('abcd').chunk(2, step=3, fillvalue='x').list()
-            Out[1]: [('a', 'b'), ('d', 'x')]
+        In [1]: Pipe('abcd').chunk(2, step=3, fillvalue='x').list()
+        Out[1]: [('a', 'b'), ('d', 'x')]
 
-            In [1]: Pipe('abcde').chunk(3, step=4).list()
-            Out[1]: [('a', 'b', 'c'), ('e',)]
+        In [1]: Pipe('abcde').chunk(3, step=4).list()
+        Out[1]: [('a', 'b', 'c'), ('e',)]
 
-            In [1]: Pipe('abcde').chunk(3, step=4, fillvalue='x').list()
-            Out[1]: [('a', 'b', 'c'), ('e', 'x', 'x')]
+        In [1]: Pipe('abcde').chunk(3, step=4, fillvalue='x').list()
+        Out[1]: [('a', 'b', 'c'), ('e', 'x', 'x')]
         ```
         """
         if fillvalue is not _MISSING and fair:
@@ -1275,11 +1262,10 @@ class Pipe:
 
         Contrast with {py:meth}`Pipe.unique`.
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            In [1]: Pipe('abbcccacbba').depeat().list()
-            Out[1]: ['a', 'b', 'c', 'a', 'c', 'b', 'a']
+        In [1]: Pipe('abbcccacbba').depeat().list()
+        Out[1]: ['a', 'b', 'c', 'a', 'c', 'b', 'a']
         ```
 
         ```{marble}
@@ -1325,15 +1311,14 @@ class Pipe:
 
         Compare with {py:meth}`Pipe.broadmap`.
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            # Equivalent:
-            In [1]: Pipe([1, 2, 3]).dictmap({'a': str, 'b': lambda x: x * x}).list()
-            Out[1]: [{'a': '1', 'b': 1}, {'a': '2', 'b': 4}, {'a': '3', 'b': 9}]
+        # Equivalent:
+        In [1]: Pipe([1, 2, 3]).dictmap({'a': str, 'b': lambda x: x * x}).list()
+        Out[1]: [{'a': '1', 'b': 1}, {'a': '2', 'b': 4}, {'a': '3', 'b': 9}]
 
-            In [1]: Pipe([1, 2, 3]).dictmap(a=str, b=lambda x: x * x).list()
-            Out[1]: [{'a': '1', 'b': 1}, {'a': '2', 'b': 4}, {'a': '3', 'b': 9}]
+        In [1]: Pipe([1, 2, 3]).dictmap(a=str, b=lambda x: x * x).list()
+        Out[1]: [{'a': '1', 'b': 1}, {'a': '2', 'b': 4}, {'a': '3', 'b': 9}]
         ```
         """
         template = replace(_MISSING, {}, template)
@@ -1426,17 +1411,16 @@ class Pipe:
         If `levels` is provided as a positive integer, only remove that many
         levels of nesting.
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            In [1]: P(['a', ['b', ['c', ['d', ['e']]]]]).flatten().list()
-            Out[1]: ['a', 'b', 'c', 'd', 'e']
+        In [1]: P(['a', ['b', ['c', ['d', ['e']]]]]).flatten().list()
+        Out[1]: ['a', 'b', 'c', 'd', 'e']
 
-            In [1]: P(['a', ['b', ['c', ['d', ['e']]]]]).flatten(levels=1).list()
-            Out[1]: ['a', 'b', ['c', ['d', ['e']]]]
+        In [1]: P(['a', ['b', ['c', ['d', ['e']]]]]).flatten(levels=1).list()
+        Out[1]: ['a', 'b', ['c', ['d', ['e']]]]
 
-            In [1]: P(['a', ['b', ['c', ['d', ['e']]]]]).flatten(levels=2).list()
-            Out[1]: ['a', 'b', 'c', ['d', ['e']]]
+        In [1]: P(['a', ['b', ['c', ['d', ['e']]]]]).flatten(levels=2).list()
+        Out[1]: ['a', 'b', 'c', ['d', ['e']]]
         ```
         """
         def pipe_flatten(res):
@@ -1909,11 +1893,10 @@ class Pipe:
 
         Contrast with {py:meth}`Pipe.depeat`
 
-        ```{eval-rst}
-        .. ipython::
+        ```{ipython}
 
-            In [1]: Pipe('abbcccacbba').unique().list()
-            Out[1]: ['a', 'b', 'c']
+        In [1]: Pipe('abbcccacbba').unique().list()
+        Out[1]: ['a', 'b', 'c']
         ```
 
         ```{marble}

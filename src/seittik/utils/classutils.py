@@ -26,9 +26,8 @@ class multimethod(metaclass=MultiMethodMeta):
     """
     Create a method with separate class and instance invocations.
 
-    ```{eval-rst}
-    .. ipython::
-        :reset_history:
+    ```{ipython}
+    :reset_history:
 
     In [1]: class Foo:
       ....:     class bar(multimethod):
