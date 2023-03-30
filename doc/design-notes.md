@@ -293,6 +293,7 @@ These create a new source.
 - {clj-core}`iterate`
 - {hs-data-list}`iterate`
 - {py-more-itertools}`iterate`
+- {py-toolz}`itertoolz.iterate`
 
 I felt the term "iterate" was too similar to {py-builtins}`iter` and the
 Python concept of iteration in general.
@@ -398,6 +399,8 @@ multiplication.
 - {js-ramda}`unnest`
 - {kt-collections}`flatten`
 - {py-itertools}`chain`
+- {py-toolz}`itertoolz.concat`
+- {py-toolz}`itertoolz.concatv`
 
 For a more powerful variant, see {py:meth}`Pipe.flatten`.
 
@@ -408,6 +411,7 @@ For a more powerful variant, see {py:meth}`Pipe.flatten`.
 - {py-more-itertools}`interleave`
 - {py-more-itertools}`interleave_longest`
 - {py-more-itertools}`roundrobin` (`itertools` recipe)
+- {py-toolz}`itertoolz.interleave`
 
 #### {py:meth}`.struct_unpack() <seittik.pipes.Pipe.struct_unpack>`
 
@@ -471,6 +475,9 @@ value via an identity function (such as a naked shear).
 - {py-more-itertools}`triplewise` (`n=3` only, `step=1` only;
   `itertools` recipe)
 - {py-more-itertools}`windowed`
+- {py-toolz}`itertoolz.partition`
+- {py-toolz}`itertoolz.partition_all`
+- {py-toolz}`itertoolz.sliding_window`
 - {rb-enumerable}`each_cons` (`step=1` only)
 - {rb-enumerable}`each_slice` (`step=n` only)
 
@@ -557,6 +564,7 @@ labeled.
 - {js-ramda}`drop`
 - {kt-collections}`drop`
 - {rb-enumerable}`drop`
+- {py-toolz}`itertoolz.drop`
 
 #### {py:meth}`.dropwhile() <seittik.pipes.Pipe.dropwhile>`
 
@@ -610,6 +618,7 @@ flatten either all levels of nesting, or a specified number.
 - {hs-data-list}`intersperse`
 - {js-ramda}`intersperse`
 - {py-more-itertools}`intersperse`
+- {py-toolz}`itertoolz.interpose`
 
 #### {py:meth}`.label() <seittik.pipes.Pipe.label>`
 
@@ -647,6 +656,7 @@ internally.
 
 - {js-ramda}`prepend`
 - {py-collections}`deque.appendleft`
+- {py-toolz}`itertoolz.cons`
 
 #### {py:meth}`.reject() <seittik.pipes.Pipe.reject>`
 
@@ -655,6 +665,7 @@ internally.
 - {js-ramda}`reject`
 - {kt-collections}`filterNot`
 - {py-itertools}`filterfalse`
+- {py-toolz}`itertoolz.remove`
 - {rb-enumerable}`reject`
 
 `reject` feels like a cleaner name than `filterfalse`.
@@ -667,6 +678,8 @@ internally.
 - {js-ramda}`project`
 - {mdb-agg}`addFields`
 - {mdb-agg}`project`
+- {py-toolz}`dicttoolz.assoc`
+- {py-toolz}`dicttoolz.dissoc`
 
 A mapping remapper. Allows selectively keeping, dropping, and renaming
 key-value pairs, transforming values, and inserting new values.
@@ -707,6 +720,7 @@ actually the same thing.
 - {kt-collections}`runningReduce`
 - {kt-collections}`scan`
 - {py-itertools}`accumulate`
+- {py-toolz}`itertoolz.accumulate`
 
 #### {py:meth}`.slice() <seittik.pipes.Pipe.slice>`
 
@@ -715,6 +729,7 @@ actually the same thing.
 - {js-ramda}`slice`
 - {kt-collections}`slice`
 - {py-itertools}`islice`
+- {py-toolz}`itertoolz.take_nth` (using `step`)
 
 #### {py:meth}`.sort() <seittik.pipes.Pipe.sort>`
 
@@ -761,6 +776,7 @@ a new item within the Pipe.
 - {js-ramda}`take`
 - {kt-collections}`take`
 - {py-more-itertools}`take` (`itertools` recipe)
+- {py-toolz}`itertoolz.take`
 - {rb-enumerable}`take`
 
 #### {py:meth}`.takewhile() <seittik.pipes.Pipe.takewhile>`
@@ -798,6 +814,7 @@ a new item within the Pipe.
 - {kt-collections}`distinct`
 - {kt-collections}`distinctBy`
 - {py-more-itertools}`unique_everseen` (`itertools` recipe)
+- {py-toolz}`itertoolz.unique`
 - {rb-enumerable}`uniq`
 
 Not to be confused with `depeat`, which only removes *consecutive*
@@ -880,6 +897,7 @@ These are all other terminal transformations of a pipe.
 - {kt-collections}`count`
 - {py-builtins}`len`
 - {py-more-itertools}`ilen`
+- {py-toolz}`itertoolz.count`
 - {rb-enumerable}`count`
 
 I went with SQL's `COUNT` as the most intuitive name, since we're
@@ -918,6 +936,7 @@ This name just comes down to subjective preference.
 
 - {clj-core}`frequencies`
 - {py-collections}`Counter`
+- {py-toolz}`itertoolz.frequencies`
 - {rb-enumerable}`tally`
 
 #### {py:meth}`.groupby() <seittik.pipes.Pipe.groupby>`
@@ -925,6 +944,7 @@ This name just comes down to subjective preference.
 - {clj-core}`group-by`
 - {js-fxts}`groupBy`
 - {js-ramda}`groupBy`
+- {py-toolz}`itertoolz.groupby`
 - {rb-enumerable}`group_by`
 
 This is akin to SQL's `GROUP BY`, and *not* like `itertools.groupby`.
@@ -972,6 +992,7 @@ For behavior that only groups adjacent elements, see
 - {js-ramda}`mergeDeepLeft`
 - {js-ramda}`mergeDeepRight`
 - {js-ramda}`mergeDeepWith`
+- {py-toolz}`dicttoolz.merge`
 
 #### {py:meth}`.min() <seittik.pipes.Pipe.min>`
 
@@ -1019,6 +1040,7 @@ For behavior that only groups adjacent elements, see
 - {kt-collections}`elementAtOrElse`
 - {kt-collections}`elementAtOrNull`
 - {py-more-itertools}`nth` (`itertools` recipe)
+- {py-toolz}`itertoolz.nth`
 
 #### {py:meth}`.struct_pack() <seittik.pipes.Pipe.struct_pack>`
 
