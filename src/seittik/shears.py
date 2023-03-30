@@ -340,7 +340,19 @@ class ShearBase:
     ####################################################################
     # Containers
 
+    # __contains__ coerces its output to a boolean, so we can't create a
+    # magic `item in X`
+    def __contains__(self, item):
+        raise NotImplementedError(f"`item in {self}` unsupported; use `{self}.contains(item)` instead")
+
+    def contains(self, item):
+        def shear_contains(v):
+            return item in v
+        shear_contains.__doc__ = f'Return {item!r} in v'
+        return shear_contains
+
     def __getitem__(self, item):
+        print(f"{self=} {item=}")
         if not isinstance(item, tuple):
             item = (item,)
         itemstr = ''.join(f'[{x!r}]' for x in item)
@@ -351,14 +363,6 @@ class ShearBase:
             return ret
         shear_getitem.__doc__ = f"""Return v{itemstr}"""
         return shear_getitem
-
-    # __contains__ coerces its output to a boolean, so we can't create a
-    # magic `item in X`
-    def contains(self, item):
-        def shear_contains(v):
-            return item in v
-        shear_contains.__doc__ = f'Return {item!r} in v'
-        return shear_contains
 
 
 class ShearVar(ShearBase):

@@ -868,6 +868,11 @@ def test_shear_contains():
     assert not X.contains(2)(s)
 
 
+def test_shear_membership_raises_error():
+    with pytest.raises(NotImplementedError, match=r'unsupported.*instead'):
+        assert 1 in X
+
+
 ########################################################################
 # Ops
 
