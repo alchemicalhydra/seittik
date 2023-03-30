@@ -79,6 +79,12 @@ anything in `seittik.utils`.
 ```
 
 ```{toctree}
+:maxdepth: 2
+
+user-guide
+```
+
+```{toctree}
 :maxdepth: 4
 
 apidocs/index
