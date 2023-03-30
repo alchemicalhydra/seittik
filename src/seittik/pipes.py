@@ -20,7 +20,7 @@ import pathlib
 import random
 import statistics
 import struct
-from types import EllipsisType
+from types import EllipsisType, FunctionType
 
 from .utils.abc import NonStrSequence
 from .utils.argutils import (
@@ -160,7 +160,13 @@ class Pipe:
         yield from self._evaluate()
 
     def __repr__(self):
-        sourcestr = f"{self._source!r}" if self._source is not _MISSING else '*'
+        match self._source:
+            case _ if self._source is _MISSING:
+                sourcestr = '*'
+            case FunctionType():
+                sourcestr = self._source.__name__.lstrip('pipe_')
+            case _:
+                sourcestr = repr(self._source)
         stepstr = ' => '.join([sourcestr, *(step.__name__.lstrip('pipe_') for step in self._steps)])
         return f"<Pipe {stepstr}>"
 

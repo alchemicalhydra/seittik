@@ -23,9 +23,20 @@ def test_pipe_repr_no_source():
     p = Pipe()
     assert repr(p) == '<Pipe *>'
 
+
 def test_pipe_repr_empty_list():
     p = Pipe([])
     assert repr(p) == '<Pipe []>'
+
+
+def test_pipe_repr_source():
+    p = Pipe.range(10)
+    assert repr(p) == '<Pipe range>'
+
+
+def test_pipe_repr_step():
+    p = Pipe([]).map(lambda x: x)
+    assert repr(p) == '<Pipe [] => map>'
 
 
 ########################################################################
