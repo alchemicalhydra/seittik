@@ -187,15 +187,22 @@ class Pipe:
         p._steps.append(step)
         return p
 
-    def _evaluate(self, sink=_MISSING):
-        if self._source is _MISSING:
-            raise TypeError("A source must be provided to evaluate a Pipe")
+    def _process(self, sink):
         res = self._depinject(self._source)
         for step in self._steps:
             res = self._depinject(step, res)
         if sink is not _MISSING:
             res = self._depinject(sink, res)
         return res
+
+    def _evaluate(self, sink=_MISSING):
+        if self._source is _MISSING:
+            if sink is not _MISSING:
+                def pipe_partial(source):
+                    return self(source)._process(sink)
+                return pipe_partial
+            raise TypeError("A source must be provided to evaluate a Pipe")
+        return self._process(sink)
 
     def _depinject(self, stage, res=_MISSING):
         stage_params = [
