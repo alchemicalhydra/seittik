@@ -49,6 +49,11 @@ def test_pipe_missing_source():
     assert str(excinfo.value) == "A source must be provided to evaluate a Pipe"
 
 
+def test_pipe_missing_source_sink_partial():
+    p = Pipe().map(lambda x: x * 3).filter(lambda x: x % 2 == 0).list()
+    assert p([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) == [6, 12, 18, 24, 30]
+
+
 ########################################################################
 # Stage params
 
