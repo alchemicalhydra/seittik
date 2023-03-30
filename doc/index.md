@@ -19,21 +19,19 @@ It provides:
 
 Something basic:
 
-```{eval-rst}
-.. ipython::
+```{ipython}
 
-    In [1]: from seittik.pipes import Pipe as P
+In [1]: from seittik.pipes import Pipe as P
 
-    In [1]: from seittik.shears import X, Y
+In [1]: from seittik.shears import X, Y
 
-    # Take numbers 1 through 4, triple them, keep evens, and sum them
-    In [1]: P([1, 2, 3, 4]).map(X * 3).filter(X % 2 == 0).fold(X + Y)
-    Out[1]: 18
+# Take numbers 1 through 4, triple them, keep evens, and sum them
+In [1]: P([1, 2, 3, 4]).map(X * 3).filter(X % 2 == 0).fold(X + Y)
+Out[1]: 18
 
-    # Or, equivalently:
-    In [1]: P.range(1, 4).map(X * 3).filter(X % 2 == 0).sum()
-    Out[1]: 18
-
+# Or, equivalently:
+In [1]: P.range(1, 4).map(X * 3).filter(X % 2 == 0).sum()
+Out[1]: 18
 ```
 
 ```{marble}
@@ -49,29 +47,28 @@ Something basic:
 
 And something more amusing:
 
-```{eval-rst}
-.. ipython::
+```{ipython}
 
-    @suppress
-    In [1]: import random; random.seed(0)
+@suppress
+In [1]: import random; random.seed(0)
 
-    # Return 5 arrays of traditional RPG stats (rolling three six-sided dice
-    # for each of "Str", "Dex", "Con", "Int", "Wis", and "Cha") that have at
-    # least one score of 14 or better, sorted by the sum of the array, in
-    # descending order, providing dict labels.
-    In [1]: (P.roll('3d6')
-       ...: .chunk(6)
-       ...: .filter(P.any(X >= 14))
-       ...: .dictmap({'sum': sum, 'scores': X})
-       ...: .take(5)
-       ...: .sort(key=X['sum'], reverse=True)
-       ...: .list())
-    Out[1]:
-    [{'sum': 71, 'scores': (13, 13, 9, 8, 16, 12)},
-     {'sum': 66, 'scores': (14, 10, 8, 13, 9, 12)},
-     {'sum': 66, 'scores': (8, 14, 9, 12, 13, 10)},
-     {'sum': 57, 'scores': (9, 15, 8, 6, 10, 9)},
-     {'sum': 54, 'scores': (12, 7, 5, 14, 6, 10)}]
+# Return 5 arrays of traditional RPG stats (rolling three six-sided dice
+# for each of "Str", "Dex", "Con", "Int", "Wis", and "Cha") that have at
+# least one score of 14 or better, sorted by the sum of the array, in
+# descending order, providing dict labels.
+In [1]: (P.roll('3d6')
+   ...: .chunk(6)
+   ...: .filter(P.any(X >= 14))
+   ...: .dictmap({'sum': sum, 'scores': X})
+   ...: .take(5)
+   ...: .sort(key=X['sum'], reverse=True)
+   ...: .list())
+Out[1]:
+[{'sum': 71, 'scores': (13, 13, 9, 8, 16, 12)},
+ {'sum': 66, 'scores': (14, 10, 8, 13, 9, 12)},
+ {'sum': 66, 'scores': (8, 14, 9, 12, 13, 10)},
+ {'sum': 57, 'scores': (9, 15, 8, 6, 10, 9)},
+ {'sum': 54, 'scores': (12, 7, 5, 14, 6, 10)}]
 ```
 
 ## Table of Contents
