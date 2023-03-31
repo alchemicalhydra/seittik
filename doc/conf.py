@@ -285,6 +285,22 @@ def _monkey_patch_embedded_sphinx_shell():
 _monkey_patch_embedded_sphinx_shell()
 
 
+_IPYTHON_OUTPUT_NOHIGHLIGHT_RE = re.compile(r'^(?:Out\[\d+\]:)?\s*<.*>\s*\n?$')
+
+# Monkey-patch IPythonConsoleLexer to properly highlight output
+def _monkey_patch_ipython_console_lexer():
+    from IPython.lib.lexers import IPythonConsoleLexer
+    ipython_console_lexer_get_mci = IPythonConsoleLexer.get_mci
+    @wraps(IPythonConsoleLexer.get_mci)
+    def get_mci(self, line):
+        mode, code, insertion = ipython_console_lexer_get_mci(self, line)
+        if mode == 'output' and isinstance(line, str) and not _IPYTHON_OUTPUT_NOHIGHLIGHT_RE.search(line):
+            mode = 'output_hl'
+        return (mode, code, insertion)
+    IPythonConsoleLexer.get_mci = get_mci
+_monkey_patch_ipython_console_lexer()
+
+
 # Monkey-patch dooble to fix missing layout
 def _monkey_patch_dooble():
     import matplotlib.pyplot as plt
