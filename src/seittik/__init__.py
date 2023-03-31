@@ -7,7 +7,7 @@ from .pipes import Pipe
 from .shears import X, Y, Z
 
 
-__version__ = '2023.03.4'
+__version__ = '2023.03.5'
 
 
 P = Pipe

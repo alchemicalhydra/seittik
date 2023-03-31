@@ -38,7 +38,7 @@ nox.help = "Run nox"
 
 [tool.poetry]
 name = 'seittik'
-version = '2023.03.4'
+version = '2023.03.5'
 description = "A functional programming library that aims to supplant Python's existing functional interfaces, offering a more comprehensive and expressive alternative."
 license = 'MIT'
 authors = ['Tom Tobin <opensource@alchemicalhydra.com>']
