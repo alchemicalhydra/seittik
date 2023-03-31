@@ -3,6 +3,19 @@
 For full details, see the [commit
 history](https://github.com/alchemicalhydra/seittik/commits/master).
 
+## 2023.03.5 (2023-03-30)
+
+- A first draft of a User Guide was added to the docs
+- Teach Pipes sinks to act as partials when missing sources
+  - Entire pipe instances can now be used as partials
+- Fix `{ipython}` directive to work without `{eval-rst}`
+- Fix `{ipython}` directive's `:doctest:` option
+- Add a global `ipython_doctest` flag
+- Guard against accidental infinite loops from shears, e.g., `foo in X`
+- Clean up `Pipe.__repr__` a bit more
+- The cross-references section of the Design Notes was further fleshed
+  out
+
 ## 2023.03.4 (2023-03-28)
 
 - Add `Pipe.remap` step
