@@ -198,6 +198,7 @@ ipython_execlines = [
     'from seittik.shears import ShearVar, X, Y, Z',
 ]
 ipython_reset_history = True
+ipython_doctest = True
 
 
 ########################################################################
@@ -261,8 +262,13 @@ def _monkey_patch_embedded_sphinx_shell():
     embedded_sphinx_shell_process_output = EmbeddedSphinxShell.process_output
     @wraps(EmbeddedSphinxShell.process_output)
     def process_output(self, data, output_prompt, input_lines, output, is_doctest, decorator, image_file):
-        if is_doctest and decorator is None:
-            decorator = '@doctest'
+        if self.directive is not None:
+            config = self.directive.state.document.settings.env.config
+            if config.ipython_doctest:
+                is_doctest = True
+        if is_doctest and output is not None:
+            if decorator is None:
+                decorator = '@doctest'
         ret = embedded_sphinx_shell_process_output(
             self,
             data,
@@ -356,6 +362,7 @@ def setup_xlink_roles(app):
 # Setup
 
 def setup(app):
+    app.add_config_value('ipython_doctest', False, 'env')
     app.add_config_value('ipython_reset_history', False, 'env')
     app.add_config_value('xlinks', {}, 'env')
     app.connect('builder-inited', setup_xlink_roles)
