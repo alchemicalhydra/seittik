@@ -255,6 +255,29 @@ def _monkey_patch_ipython_directive():
 _monkey_patch_ipython_directive()
 
 
+# Monkey-patch EmbeddedSphinxShell to properly support block-wide `:doctest:` option
+def _monkey_patch_embedded_sphinx_shell():
+    from IPython.sphinxext.ipython_directive import EmbeddedSphinxShell
+    embedded_sphinx_shell_process_output = EmbeddedSphinxShell.process_output
+    @wraps(EmbeddedSphinxShell.process_output)
+    def process_output(self, data, output_prompt, input_lines, output, is_doctest, decorator, image_file):
+        if is_doctest and decorator is None:
+            decorator = '@doctest'
+        ret = embedded_sphinx_shell_process_output(
+            self,
+            data,
+            output_prompt,
+            input_lines,
+            output,
+            is_doctest,
+            decorator,
+            image_file,
+        )
+        return ret
+    EmbeddedSphinxShell.process_output = process_output
+_monkey_patch_embedded_sphinx_shell()
+
+
 # Monkey-patch dooble to fix missing layout
 def _monkey_patch_dooble():
     import matplotlib.pyplot as plt
