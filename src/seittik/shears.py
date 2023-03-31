@@ -352,7 +352,6 @@ class ShearBase:
         return shear_contains
 
     def __getitem__(self, item):
-        print(f"{self=} {item=}")
         if not isinstance(item, tuple):
             item = (item,)
         itemstr = ''.join(f'[{x!r}]' for x in item)
