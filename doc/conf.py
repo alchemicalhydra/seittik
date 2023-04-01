@@ -337,6 +337,33 @@ def _monkey_patch_dooble():
 _monkey_patch_dooble()
 
 
+# Monkey-patch MystRenderer to stop outputting spurious `None` values
+def _monkey_patch_myst_renderer():
+    from autodoc2.render.myst_ import MystRenderer
+    myst_renderer_render_data = MystRenderer.render_data
+    @wraps(MystRenderer.render_data)
+    def render_data(self, item):
+        gen = myst_renderer_render_data(self, item)
+        match item:
+            case {'type': 'attribute' | 'data', 'value': None}:
+                try:
+                    while True:
+                        line = next(gen)
+                        match line:
+                            case ':value: >':
+                                next(gen)
+                            case ':value: <Multiline-String>':
+                                pass
+                            case _:
+                                yield line
+                except StopIteration:
+                    return
+            case _:
+                yield from gen
+    MystRenderer.render_data = render_data
+_monkey_patch_myst_renderer()
+
+
 ########################################################################
 # xlinks (replacement for underpowered extlinks)
 
