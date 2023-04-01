@@ -120,6 +120,7 @@ xlinks = {
     'py-struct': ('https://docs.python.org/3/library/struct.html#struct.{v}', "Python struct: {v}"),
     'py-toolz': ('https://toolz.readthedocs.io/en/latest/api.html#toolz.{v}', "Python toolz: {v}"),
     'rb-enumerable': _fix_rb('https://ruby-doc.org/current/Enumerable.html#method-i-{v}', "Ruby Enumerable: {v}"),
+    'wp': ('https://en.wikipedia.org/wiki/{v}', "Wikipedia: {v}"),
 }
 
 
@@ -142,6 +143,8 @@ myst_enable_extensions = [
     'attrs_inline',
     # https://myst-parser.readthedocs.io/en/latest/syntax/optional.html#code-fences-using-colons
     'colon_fence',
+    # https://myst-parser.readthedocs.io/en/latest/syntax/optional.html#definition-lists
+    'deflist',
     # https://myst-parser.readthedocs.io/en/latest/syntax/optional.html#field-lists
     'fieldlist',
     # https://myst-parser.readthedocs.io/en/latest/syntax/optional.html#typography
@@ -188,6 +191,8 @@ autodoc2_module_all_regexes = [
     r'^seittik\..*',
 ]
 autodoc2_index_template = None
+autodoc2_annotations = False
+autodoc2_hidden_objects = {'inherited', 'private'}
 
 
 ########################################################################

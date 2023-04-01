@@ -78,10 +78,10 @@ class Pipe:
     """
     A fluent interface for processing iterable data.
 
-    A Pipe is built out of three kinds of parts, or *stages*:
+    A pipe is built out of three kinds of parts, or *stages*:
 
-    - A Pipe has a *source*, which is the initial iterable of data provided to
-      a Pipe.
+    - A pipe has a *source*, which is the initial iterable of data provided to
+      a pipe.
 
       {py:class}`Pipe` also provides alternate constructors which generate
       their own sources (e.g., {py:meth}`Pipe.range` for ranges of numbers).
@@ -90,38 +90,63 @@ class Pipe:
       of data, each represented internally by a one-argument function that
       accepts an iterable, and returns a new iterable.
 
-      Calling a step method clones the current Pipe and returns the clone with
-      that step appended; it does not mutate the Pipe in-place, nor does it
+      Calling a step method clones the current pipe and returns the clone with
+      that step appended; it does not mutate the pipe in-place, nor does it
       perform any evaluation.
 
-    - A Pipe is evaluated by calling a *sink*, which applies all steps and
+    - A pipe is evaluated by calling a *sink*, which applies all steps and
       returns a final value of some kind.
 
-    A Pipe can also be iterated upon directly, which acts as a sink that
+    A pipe can also be iterated upon directly, which acts as a sink that
     yields successive items with all steps applied.
 
-    Providing an initial source is optional. A Pipe that has not yet been
-    evaluated can be called with a source, which will clone the Pipe using
-    the provided source.
+    Providing an initial source is optional. Any pipe acts as a callable,
+    which accepts a source, clones the pipe, assigns the source, and returns
+    the new pipe.
 
-    Similarly, all sinks act as partials if called as class methods,
-    accepting a source which will be immediately evaluated.
+    If a sink is called on a pipe without a source, the sink returns a new,
+    reusable partial that accepts a source and returns the result of
+    evaluating the entire pipe using that source.
+
+    Additionally, all sinks return partials if called as class methods,
+    which accept a source and return its evaluation using that sink.
+
+    All of the following examples are equivalent:
 
     ```{ipython}
 
-    # All of these are equivalent:
+    # Providing an initial source and calling a sink:
     In [1]: Pipe([1, 2, 3, 4, 5]).list()
     Out[1]: [1, 2, 3, 4, 5]
 
+    # Providing a source to an instance and calling a sink on the result:
     In [1]: Pipe()([1, 2, 3, 4, 5]).list()
     Out[1]: [1, 2, 3, 4, 5]
 
+    # Creating a partial from calling a sink on an instance without a
+    # source:
+    In [1]: Pipe().list()([1, 2, 3, 4, 5])
+    Out[1]: [1, 2, 3, 4, 5]
+
+    # Creating a partial by calling a sink as a class method:
     In [1]: Pipe.list()([1, 2, 3, 4, 5])
     Out[1]: [1, 2, 3, 4, 5]
     ```
+
+    :param source: A source iterable for the pipe.
+    :type source: {py:class}`Iterable <collections.abc.Iterable>`
+    :param rng: A random number generator instance for the pipe; see
+                {py:meth}`Pipe.set_rng` for details.
+    :type rng: {py:class}`random.Random` or {external:py:class}`str`
     """
     DROP = _DROP
+    """
+    A sentinel used in certain stages.
+    """
     KEEP = _KEEP
+    """
+    A sentinel used in certain stages.
+    """
 
     def __init__(self, source=_MISSING, *, rng=_MISSING):
         self._source = source if source is _MISSING else PlainSource(source)
@@ -131,8 +156,12 @@ class Pipe:
 
     def __call__(self, source):
         """
-        A Pipe can be called with a new source, which clones the Pipe, replaces
-        the existing source, and returns the new Pipe.
+        A pipe can be called with a new source, which clones the pipe, replaces
+        the existing source, and returns the new pipe.
+
+        :param source: A new source iterable for the pipe.
+        :type source: {py:class}`Iterable <collections.abc.Iterable>`
+        :rtype: {py:class}`Pipe`
         """
         p = self.clone()
         p._source = source if source is _MISSING else PlainSource(source)
@@ -140,10 +169,14 @@ class Pipe:
 
     def __getitem__(self, key):
         """
-        A Pipe can be indexed or sliced.
+        A pipe can be indexed or sliced.
 
         - `Pipe[n]` is equivalent to calling {py:meth}`Pipe.nth`
         - `Pipe[start:stop:step]` is equivalent to calling {py:meth}`Pipe.slice`
+
+        :param key: An index or slice to apply to this pipe.
+        :type key: {external:py:class}`int` or {external:py:class}`slice`
+        :rtype: any
         """
         match key:
             case int():
@@ -155,7 +188,9 @@ class Pipe:
 
     def __iter__(self):
         """
-        Iterating over a Pipe evaluates it and yields the resulting items.
+        Iterating over a pipe evaluates it and yields the resulting items.
+
+        :rtype: {external:py:class}`Generator <collections.abc.Generator>`
         """
         yield from self._evaluate()
 
@@ -171,6 +206,12 @@ class Pipe:
         return f"<Pipe {stepstr}>"
 
     def __reversed__(self):
+        """
+        Calling {external:py:func}`reversed` on a pipe is equivalent to calling
+        {py:meth}`Pipe.reverse`.
+
+        :rtype: {py:class}`Pipe`
+        """
         return self.clone().reverse()
 
     ##############################################################
@@ -201,7 +242,7 @@ class Pipe:
                 def pipe_partial(source):
                     return self(source)._process(sink)
                 return pipe_partial
-            raise TypeError("A source must be provided to evaluate a Pipe")
+            raise TypeError("A source must be provided to evaluate a pipe")
         return self._process(sink)
 
     def _depinject(self, stage, res=_MISSING):
@@ -250,7 +291,7 @@ class Pipe:
                 # Reference to bare Pipe class
                 case ('cls', _):
                     stage_args.append(self.__class__)
-                # Reference to the Pipe's RNG
+                # Reference to the pipe's RNG
                 case ('rng', _):
                     stage_args.append(self._rng)
                 # Unknown
@@ -287,7 +328,7 @@ class Pipe:
 
     def set_rng(self, rng=_MISSING):
         """
-        Clone this Pipe and set the new Pipe's random number generator to `rng`,
+        Clone this pipe and set the new pipe's random number generator to `rng`,
         which should be an instance of `random.Random`.
 
         If `rng` is not provided, it will be reset to the shared RNG instance
@@ -298,6 +339,11 @@ class Pipe:
         - `"shared"` to reset to the shared RNG instance
         - `"pseudo"` to create a new instance of `random.Random`
         - `"crypto"` to create a new instance of `random.SystemRandom`
+
+        :param rng: A random number generator instance for the pipe.
+        :type rng: {py:class}`random.Random` or {external:py:class}`str`
+
+        :rtype: {py:class}`Pipe`
         """
         p = self.clone()
         p._set_rng(rng)
@@ -305,49 +351,68 @@ class Pipe:
 
     def seed_rng(self, seed=None):
         """
-        Clone this Pipe and set the new Pipe's random number generator seed to
+        Clone this pipe and set the new pipe's random number generator seed to
         `seed`.
+
+        :rtype: {py:class}`Pipe`
         """
         p = self.clone()
         p._rng = p._rng.__class__(seed)
         return p
 
     ##############################################################
-    # Clone an existing Pipe
+    # Clone an existing pipe
 
     def clone(self):
         """
-        Return a clone of this Pipe.
+        Return a clone of this pipe.
 
         It's usually unnecessary to call this explicitly unless building
-        alternative Pipes from a template Pipe.
+        alternative pipes from a template pipe.
 
-        Cloning a Pipe does *not* replace its RNG; you need to explicitly call
+        Cloning a pipe does *not* replace its RNG; you need to explicitly call
         {py:meth}`set_rng` or {py:meth}`seed_rng` for that.
+
+        :rtype: {py:class}`Pipe`
         """
         p = self.__class__._with_source(self._source)
         p._steps = self._steps.copy()
         return p
 
     ##############################################################
-    # Cache an existing Pipe's source
+    # Cache an existing pipe's source
 
     def cache(self):
         """
-        Force-evaluate this Pipe and return a new Pipe with the result
+        Force-evaluate this pipe and return a new pipe with the result
         as a new source.
 
-        Existing steps are cleared from the new Pipe.
+        Existing steps are cleared from the new pipe.
+
+        :rtype: {py:class}`Pipe`
         """
         return self.__class__(self.list())
 
     ##############################################################
-    # Create a new Pipe: alternate constructors
+    # Create a new pipe: alternate constructors
 
     @classonlymethod
     def items(cls, mapping, /):
         """
         {{pipe_source}} Yield the items (key-value pairs) of `mapping`.
+
+        ```{ipython}
+
+        In [1]: Pipe.items({'a': 1, 'b': 2, 'c': 3}).list()
+        Out[1]: [('a', 1), ('b', 2), ('c', 3)]
+        ```
+
+        :param mapping: A mapping source.
+        :type mapping: {py:class}`Mapping <collections.abc.Mapping>`
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Output
+          : `*((key, value), ...)`{l=python}
         """
         def pipe_items():
             return mapping.items()
@@ -360,6 +425,13 @@ class Pipe:
         contents of the provided directory.
 
         See {py:meth}`pathlib.Path.iterdir`.
+
+        :param path: A path to iterate over the contents of.
+        :type path: {py:class}`os.PathLike`
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Output
+          : `*(pathlib.Path(), ...)`{l=python}
         """
         def pipe_iterdir():
             return pathlib.Path(path).iterdir()
@@ -394,6 +466,11 @@ class Pipe:
         [      add1(16)      ]
         -13-14-15-16-17------>
         ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Output
+          : `*(initial, func(initial), func(func(initial)), ...)`{l=python}
         """
         def pipe_iterfunc():
             ret = initial
@@ -407,6 +484,17 @@ class Pipe:
     def keys(cls, mapping, /):
         """
         {{pipe_source}} Yield the keys of `mapping`.
+
+        ```{ipython}
+
+        In [1]: Pipe.keys({'a': 1, 'b': 2, 'c': 3}).list()
+        Out[1]: ['a', 'b', 'c']
+        ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Output
+          : `*(key, ...)`{l=python}
         """
         def pipe_keys():
             return mapping.keys()
@@ -420,10 +508,40 @@ class Pipe:
         If `a` and `b` are omitted, they default to `0` and `1`.
 
         `b` is not guaranteed to ever be a result (i.e., the range should be
-        considered as `[a, b)`.
+        considered as `[a, b)`).
 
         Contrast with {py:meth}`Pipe.randrange`, which yields discrete integers
         within a closed range.
+
+        ```{ipython}
+
+        @suppress
+        In [1]: import random; random.seed(0)
+
+        In [1]: Pipe.randfloat().take(5).list()
+        Out[1]:
+        [0.8444218515250481,
+         0.7579544029403025,
+         0.420571580830845,
+         0.25891675029296335,
+         0.5112747213686085]
+
+        @suppress
+        In [1]: import random; random.seed(0)
+
+        In [1]: Pipe.randfloat(13, 101).take(5).list()
+        Out[1]:
+        [87.30912293420424,
+         79.69998745874662,
+         50.01029911311436,
+         35.784674025780774,
+         57.99217548043755]
+        ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Output
+          : `*(float(), ...)`{l=python}
         """
         def pipe_randfloat(rng):
             if a == 0 and b == 1:
@@ -461,6 +579,11 @@ class Pipe:
 
         Contrast with {py:meth}`Pipe.randfloat`, which yields floating-point
         numbers.
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Output
+          : `*(int(), ...)`{l=python}
         """
         start, stop, step = check_slice_args('range', args, kwargs)
         def pipe_randrange(rng):
@@ -503,6 +626,11 @@ class Pipe:
         In [1]: Pipe.range(1, 10).list()
         Out[1]: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Output
+          : `*(int(), ...)`{l=python}
         """
         start, stop, step = check_slice_args('range', args, kwargs)
         if stop is None:
@@ -549,6 +677,11 @@ class Pipe:
         In [1]: Pipe.rangetil(1, 10).list()
         Out[1]: [1, 2, 3, 4, 5, 6, 7, 8, 9]
         ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Output
+          : `*(int(), ...)`{l=python}
         """
         start, stop, step = check_slice_args('rangetil', args, kwargs)
         if stop is None:
@@ -578,6 +711,11 @@ class Pipe:
         [ repeat(a)          ]
         -a--a--a--a--a--a--a->
         ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Output
+          : `*(value, ...)`{l=python}
         """
         check_int_positive_or_none('n', n)
         src = itertools.repeat(value) if n is None else itertools.repeat(value, times=n)
@@ -607,6 +745,11 @@ class Pipe:
         In [1]: Pipe.repeatfunc(random.randint, 1, 6).take(5).list()
         Out[1]: [4, 4, 1, 3, 5]
         ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Output
+          : `*(func(*args, **kwargs), ...)`{l=python}
         """
         def pipe_repeatfunc():
             while True:
@@ -644,6 +787,11 @@ class Pipe:
         In [1]: Pipe.roll('1d12+3').take(1).list()
         Out[1]: [13]
         ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Output
+          : `*(int(), ...)`{l=python}
         """
         def pipe_roll(rng):
             dice = DiceRoll(*args, rng=rng)
@@ -674,6 +822,11 @@ class Pipe:
         [ unfold(build_pow2, 2) ]
         -2---4---8---16--32--64->
         ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Output
+          : `*(seed, func(seed)[0], func(func(seed)[0])[0], ...)`{l=python}
         """
         def pipe_unfold():
             feedback = seed
@@ -689,6 +842,17 @@ class Pipe:
     def values(cls, mapping, /):
         """
         {{pipe_source}} Yield the values of `mapping`.
+
+        ```{ipython}
+
+        In [1]: Pipe.values({'a': 1, 'b': 2, 'c': 3}).list()
+        Out[1]: [1, 2, 3]
+        ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Output
+          : `*(value, ...)`{l=python}
         """
         def pipe_values():
             return mapping.values()
@@ -708,29 +872,57 @@ class Pipe:
         {{pipe_source}} Yields the nodes of `collection` as `(parent, key,
         node)` tuples, where `parent[key] is node`.
 
-        If `full_path` is true, instead yields tuples of `(parent, key, node)`
-        tuples representing the full path to a given node.
 
-        If `leaves_only` is true, only leaf nodes will be yielded.
+        ```ipython
 
-        `strategy` must be one of `'DFS'` (depth-first search; default) or
-        `'BFS'` (breadth-first search).
+        In [1]: Pipe.walk(['a', ['b', ['c', ['d', ['e']]]]]).list()
+        Out[1]:
+        [(['a', ['b', ['c', ['d', ['e']]]]], 0, 'a'),
+         (['a', ['b', ['c', ['d', ['e']]]]], 1, ['b', ['c', ['d', ['e']]]]),
+         (['b', ['c', ['d', ['e']]]], 0, 'b'),
+         (['b', ['c', ['d', ['e']]]], 1, ['c', ['d', ['e']]]),
+         (['c', ['d', ['e']]], 0, 'c'),
+         (['c', ['d', ['e']]], 1, ['d', ['e']]),
+         (['d', ['e']], 0, 'd'),
+         (['d', ['e']], 1, ['e']),
+         (['e'], 0, 'e')]
+        ```
 
-        If `max_depth` is provided as a positive integer, only descend up to the
-        provided depth. `max_depth=1` would yield only the values directly
-        within the collection, `max_depth=2` would yield those items as well as
-        their children, and so on.
+        :param collection: A collection to walk.
+        :type collection: {py:class}`Collection <collections.abc.Collection>`
+        :param full_path: Is true, instead of yielding single `(parent, key, node)`
+          tuples at a time, yield tuples of such tuples representing the
+          full path to a given node.
+        :type full_path: {external:py:class}`bool`
+        :param leaves_only: If true, only leaf nodes will be yielded.
+        :type leaves_only: {external:py:class}`bool`
+        :param strategy: One of `'DFS'` ({wp}`Depth-First Search)
+          <Depth-first_search>`; the default) or `'BFS'`
+          ({wp}`Breadth-First Search <Breadth-first_search>`).
+        :type strategy: {external:py:class}`str`
+        :param max_depth: If provided as a positive integer, only
+          descend up to the provided depth. `max_depth=1` would yield
+          only the values directly within the collection, `max_depth=2`
+          would yield those items as well as their children, and so on.
+        :type max_depth: {external:py:class}`int`
+        :param descend: If provided as a callable, only nodes for
+          which `descend(node)` is true will be recursively descended
+          into.
+        :type descend: {py:class}`Callable <collections.abc.Callable>`
+        :param children: If provided as a callable, `children(node)`
+          should return an iterable yielding child node `(key, value)`
+          pairs for a given mapping `node`, which will be used instead
+          of descending into every possible mapping and non-string
+          sequence.
 
-        If `descend` is a callable, only nodes for which `descend(node)` is true
-        will be recursively descended into.
-
-        If `children` is a callable, `children(node)` should return an iterable
-        yielding child node `(key, value)` pairs for a given mapping `node`,
-        which will be used instead of descending into every possible mapping and
-        non-string sequence.
-
-        If `children` is a string, as a convenience, it will yield only values
-        of matching keys when mappings are encountered.
+          If provided as a string, as a convenience, it will yield only
+          values of matching keys when mappings are encountered.
+        :type children: {py:class}`Callable <collections.abc.Callable>`
+          or {external:py:class}`str`
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Output
+          : `*((parent, key, node), ...)`{l=python} or `*(((parent, key, node), ...), ...)`{l=python}
         """
         def pipe_walk():
             return walk_collection(
@@ -752,6 +944,26 @@ class Pipe:
 
         `dir` is a {py:class}`pathlib.Path` instance, and `subdirs` and `files`
         are lists of string names.
+
+        :param path: A path to walk the recursive contents of.
+        :type path: {py:class}`os.PathLike`
+        :param top_down: Whether to generate directory tuples before (if
+          true) or after (if false) generating the tuples for their
+          descendants.
+        :type top_down: {external:py:class}`bool`
+        :param on_error: An optional callable that accepts any
+          {py:exc}`OSError` exceptions raised during traversal; if not
+          provided, errors are ignored.
+        :type on_error: {py:class}`Callable <collections.abc.Callable>`
+          or {py:obj}`None`
+        :param follow_symlinks: If true, treat symlinks during traversal
+          as if they were their targets, including visiting directory
+          targets; otherwise, treat them as normal files.
+        :type top_down: {external:py:class}`bool`
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Output
+          : `*((pathlib.Path(), [*str()], [*str()]), ...)`{l=python}
         """
         # This was added in Python 3.12, so we implement it ourselves.
         # (We can't simply overlay `os.walk` and map all the results to
@@ -770,7 +982,7 @@ class Pipe:
         return cls._with_source(pipe_walkdir)
 
     ##############################################################
-    # Create a new Pipe OR modify an existing Pipe
+    # Create a new pipe OR modify an existing pipe
 
     class cartesian_product(multimethod):
         """
@@ -780,7 +992,24 @@ class Pipe:
         See {py:func}`itertools.product`.
 
         Contrast with {py:meth}`Pipe.product`, which is a sink that returns the
-        result of multiplying the Pipe's items.
+        result of multiplying the pipe's items.
+
+        ```ipython
+
+        In [1]: [''.join(v) for v in Pipe.cartesian_product('ABCD', 'xy')]
+        Out[1]: ['Ax', 'Ay', 'Bx', 'By', 'Cx', 'Cy', 'Dx', 'Dy']
+
+        In [1]: [''.join(v) for v in Pipe(['ABCD', 'xy']).cartesian_product()]
+        Out[1]: ['Ax', 'Ay', 'Bx', 'By', 'Cx', 'Cy', 'Dx', 'Dy']
+        ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Input
+          : `*(Iterable[T], ...)`{l=python}
+
+          Output
+          : `*(tuple[T], ...)`{l=python}
         """
 
         def _class(cls, *iterables, repeat=1):
@@ -795,7 +1024,7 @@ class Pipe:
         def _instance(self, repeat=1):
             """
             {{pipe_step}} Yield all possible ordered tuples of the elements of this
-            Pipe's items.
+            pipe's items.
             """
             def pipe_cartesian_product(res):
                 return itertools.product(*res, repeat=repeat)
@@ -822,6 +1051,14 @@ class Pipe:
         [ chain()           ]
         --a-b-c-d-e-f-g-h-i->
         ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Input
+          : `*(Iterable[T], ...)`{l=python}
+
+          Output
+          : `*(T(), ...)`{l=python}
         """
 
         def _class(cls, *iterables):
@@ -834,7 +1071,7 @@ class Pipe:
 
         def _instance(self):
             """
-            {{pipe_step}} Yield from each of this Pipe's items, in order.
+            {{pipe_step}} Yield from each of this pipe's items, in order.
             """
             def pipe_chain(res):
                 return itertools.chain.from_iterable(res)
@@ -863,6 +1100,14 @@ class Pipe:
         [ interleave()      ]
         --a-d-g-b-e-h-c-f-i->
         ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Input
+          : `*(Iterable[T], ...)`{l=python}
+
+          Output
+          : `*(T(), ...)`{l=python}
         """
 
         def _class(cls, *iterables, fair=False):
@@ -884,7 +1129,7 @@ class Pipe:
 
         def _instance(self, fair=False):
             """
-            {{pipe_step}} Yield cross-wise from each of this Pipe's items.
+            {{pipe_step}} Yield cross-wise from each of this pipe's items.
             """
             def pipe_interleave(res):
                 if fair:
@@ -904,6 +1149,23 @@ class Pipe:
         format string.
 
         See {external:py:func}`struct.unpack`.
+
+        ```{ipython}
+
+        In [1]: Pipe.struct_unpack('<i', b'MEOWWOOF').list()
+        Out[1]: [(1464812877,), (1179602775,)]
+
+        In [1]: Pipe([b'MEOW', b'WOOF']).struct_unpack('<i').list()
+        Out[1]: [(1464812877,), (1179602775,)]
+        ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Input
+          : `*(bytes(), ...)`{l=python}
+
+          Output
+          : `*(tuple(), ...)`{l=python}
         """
         def _class(cls, format_, buffer, /):
             """
@@ -916,7 +1178,7 @@ class Pipe:
 
         def _instance(self, format_, /):
             """
-            {{pipe_step}} Yield tuples of unpacked bytes from the Pipe's items using
+            {{pipe_step}} Yield tuples of unpacked bytes from the pipe's items using
             `format`.
             """
             def pipe_struct_unpack(res):
@@ -950,6 +1212,35 @@ class Pipe:
         `ValueError` will be raised.
 
         See {external:py:func}`zip` and {py:func}`itertools.zip_longest`.
+
+        ```{ipython}
+
+        In [1]: Pipe.zip('abc', [6, 7, 8]).list()
+        Out[1]: [('a', 6), ('b', 7), ('c', 8)]
+
+        In [1]: Pipe.zip('abc', [6, 7]).list()
+        Out[1]: [('a', 6), ('b', 7)]
+
+        In [1]: Pipe.zip('abc', [6, 7], fillvalue=None).list()
+        Out[1]: [('a', 6), ('b', 7), ('c', None)]
+
+        In [1]: Pipe(['abc', [6, 7, 8]]).zip().list()
+        Out[1]: [('a', 6), ('b', 7), ('c', 8)]
+
+        In [1]: Pipe(['abc', [6, 7]]).zip().list()
+        Out[1]: [('a', 6), ('b', 7)]
+
+        In [1]: Pipe(['abc', [6, 7]]).zip(fillvalue=None).list()
+        Out[1]: [('a', 6), ('b', 7), ('c', None)]
+        ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Input
+          : `*(Iterable[T], ...)`{l=python}
+
+          Output
+          : `*(tuple[T], ...)`{l=python}
         """
 
         def _class(cls, *iterables, fillvalue=_MISSING, strict=False):
@@ -968,7 +1259,7 @@ class Pipe:
 
         def _instance(self, fillvalue=_MISSING, strict=False):
             """
-            {{pipe_step}} Yield the results of zipping together each of this Pipe's
+            {{pipe_step}} Yield the results of zipping together each of this pipe's
             items.
 
             The source must be finite, and it will be exhausted upon evaluation.
@@ -984,14 +1275,34 @@ class Pipe:
             return self._with_step(pipe_zip)
 
     ##############################################################
-    # Modify an existing Pipe: intermediate steps
+    # Modify an existing pipe: intermediate steps
 
     def append(self, *items):
         """
         {{pipe_step}} Yield each of the source's items, then yield each of `items`.
 
-        Compare with {py:meth}`Pipe.prepend`, which yields the `items` first,
-        and then yields the source's items.
+        Compare with:
+
+        - {py:meth}`Pipe.concat`, which yields the source's items first,
+          and then yields from each provided iterable in order.
+        - {py:meth}`Pipe.precat`, which first yields from each provided
+          iterable in order, and then yields the source's items,
+        - {py:meth}`Pipe.prepend`, which yields the provided items in
+          order first, and then yields the source's items.
+
+        ```{ipython}
+
+        In [1]: Pipe(['a', 'b', 'c']).append('d', 'e', 'f').list()
+        Out[1]: ['a', 'b', 'c', 'd', 'e', 'f']
+        ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Input
+          : `*(T(), ...)`{l=python}
+
+          Output
+          : `*(T(), ...)`{l=python}
         """
         def pipe_append(res):
             return itertools.chain(res, items)
@@ -1003,11 +1314,25 @@ class Pipe:
 
         Equivalent to yielding `(item,) * n` for each item.
 
+        ```{ipython}
+
+        In [1]: Pipe(['a', 'b', 'c']).broadcast(3).list()
+        Out[1]: [('a', 'a', 'a'), ('b', 'b', 'b'), ('c', 'c', 'c')]
+        ```
+
         ```{marble}
         -2----------------->
         [ broadcast(2)     ]
         -2,2----2,2----2,2->
         ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Input
+          : `*(T(), ...)`{l=python}
+
+          Output
+          : `*((T() * n), ...)`{l=python}
         """
         def pipe_broadcast(res):
             for v in res:
@@ -1028,6 +1353,14 @@ class Pipe:
         In [1]: Pipe([1, 2, 3]).broadmap(str, lambda x: x * x).list()
         Out[1]: [('1', 1), ('2', 4), ('3', 9)]
         ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Input
+          : `*(T(), ...)`{l=python}
+
+          Output
+          : `*(tuple(funcs[0](T), funcs[1](T), ...), ...)`{l=python}
         """
         def pipe_broadmap(res):
             for v in res:
@@ -1104,6 +1437,14 @@ class Pipe:
         In [1]: Pipe('abcde').chunk(3, step=4, fillvalue='x').list()
         Out[1]: [('a', 'b', 'c'), ('e', 'x', 'x')]
         ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Input
+          : `*(T(), ...)`{l=python}
+
+          Output
+          : `*(tuple[T], ...)`{l=python}
         """
         if fillvalue is not _MISSING and fair:
             raise TypeError("'fillvalue' and 'fair' are mutually exclusive")
@@ -1146,6 +1487,22 @@ class Pipe:
 
         Contrast with {py:meth}`Pipe.groupby`, which is a sink that groups
         elements into a `dict` by a key function regardless of their position.
+
+        ```{ipython}
+
+        In [1]: is_even = lambda x: x % 2 == 0
+
+        In [1]: Pipe([1, 1, 3, 2, 4, 1, 3, 4, 4, 6, 4]).chunkby(is_even).list()
+        Out[1]: [(1, 1, 3), (2, 4), (1, 3), (4, 4, 6, 4)]
+        ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Input
+          : `*(T(), ...)`{l=python}
+
+          Output
+          : `*(tuple[T], ...)`{l=python}
         """
         def pipe_chunkby(res):
             for _, g in itertools.groupby(res, key):
@@ -1164,6 +1521,26 @@ class Pipe:
         Accepts `min` and `max` as either positional or keyword arguments. If
         provided as positional arguments, *both* `min` and `max` must be
         specified, and *must not* be specified as keyword arguments.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).clamp(3, 7).list()
+        Out[1]: [3, 3, 3, 4, 5, 6, 7, 7, 7, 7]
+
+        In [1]: Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).clamp(min=3).list()
+        Out[1]: [3, 3, 3, 4, 5, 6, 7, 8, 9, 10]
+
+        In [1]: Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).clamp(max=7).list()
+        Out[1]: [1, 2, 3, 4, 5, 6, 7, 7, 7, 7]
+        ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Input
+          : `*(T(), ...)`{l=python}
+
+          Output
+          : `*(T(), ...)`{l=python}
         """
         match args:
             case (_, _) if min is not MINIMUM or max is not MAXIMUM:
@@ -1197,6 +1574,33 @@ class Pipe:
 
         See {py:func}`itertools.combinations` and
         {py:func}`itertools.combinations_with_replacement`.
+
+        ```{ipython}
+
+        In [1]: Pipe('abc').combinations(k=2).list()
+        Out[1]: [('a', 'b'), ('a', 'c'), ('b', 'c')]
+
+        In [1]: Pipe('abcd').combinations(k=(2, 3)).list()
+        Out[1]:
+        [('a', 'b'),
+         ('a', 'c'),
+         ('a', 'd'),
+         ('b', 'c'),
+         ('b', 'd'),
+         ('c', 'd'),
+         ('a', 'b', 'c'),
+         ('a', 'b', 'd'),
+         ('a', 'c', 'd'),
+         ('b', 'c', 'd')]
+        ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Input
+          : `list(*(Iterable[T], ...))`{l=python}
+
+          Output
+          : `*((tuple[T], ...), ...)`{l=python}
         """
         k_min, k_max = check_k_args('k', k, default=_POOL)
         func = itertools.combinations_with_replacement if replacement else itertools.combinations
@@ -1211,11 +1615,22 @@ class Pipe:
         {{pipe_step}} Yield all items from the source, then all items from each
         of `iterables`, in order.
 
-        Compare with {py:meth}`Pipe.precat`, which yields from the provided
-        iterables first, and then yields the source's items.
+        Compare with:
 
-        Contrast with {py:meth}`Pipe.chain`, which treats each source item as a
-        sub-iterable to yield items from.
+        - {py:meth}`Pipe.append`, which yields the source's items first,
+          and then yields the provided items in order.
+        - {py:meth}`Pipe.precat`, which first yields from each provided
+          iterable in order, and then yields the source's items,
+        - {py:meth}`Pipe.prepend`, which yields the provided items in
+          order first, and then yields the source's items.
+
+        ```{ipython}
+
+        In [1]: Pipe(['a', 'b', 'c']).concat(['d', 'e', 'f']).list()
+        Out[1]: ['a', 'b', 'c', 'd', 'e', 'f']
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_concat(res):
             return itertools.chain(res, *iterables)
@@ -1230,11 +1645,31 @@ class Pipe:
 
         See {py:meth}`Pipe.repeat` to repeat a single value, instead.
 
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3]).cycle().take(5).list()
+        Out[1]: [1, 2, 3, 1, 2]
+
+        In [1]: Pipe([1, 2, 3]).cycle(1).list()
+        Out[1]: [1, 2, 3]
+
+        In [1]: Pipe([1, 2, 3]).cycle(3).list()
+        Out[1]: [1, 2, 3, 1, 2, 3, 1, 2, 3]
+        ```
+
         ```{marble}
         -1-2-3-|
         [ cycle()          ]
         -1-2-3-1-2-3-1-2-3->
         ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Input
+          : `*(Iterable[T], ...)`{l=python}
+
+          Output
+          : `*(T(), ...)`{l=python}
         """
         check_int_positive_or_none('n', n)
         match n:
@@ -1260,6 +1695,19 @@ class Pipe:
         and yield the item unchanged.
 
         `fmt` defaults to `'{!r}'`.
+
+        ```{ipython}
+
+        In [1]: x = Pipe(['a', 'b', 'c']).debug().list()
+        'a'
+        'b'
+        'c'
+
+        In [1]: x
+        Out[1]: ['a', 'b', 'c']
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_debug(res):
             for item in res:
@@ -1286,6 +1734,8 @@ class Pipe:
         [ depeat()             ]
         -a-b---c-----a-c-b---a->
         ```
+
+        :rtype: {py:class}`Pipe`
         """
         match key:
             case Callable() | Sentinel():
@@ -1333,6 +1783,8 @@ class Pipe:
         In [1]: Pipe([1, 2, 3]).dictmap(a=str, b=lambda x: x * x).list()
         Out[1]: [{'a': '1', 'b': 1}, {'a': '2', 'b': 4}, {'a': '3', 'b': 9}]
         ```
+
+        :rtype: {py:class}`Pipe`
         """
         template = replace(_MISSING, {}, template)
         template.update(kwargs)
@@ -1345,11 +1797,19 @@ class Pipe:
         """
         {{pipe_step}} Skip the first `n` items and yield the rest.
 
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9]).drop(4).list()
+        Out[1]: [5, 6, 7, 8, 9]
+        ```
+
         ```{marble}
         -1-2-3-4-5-6-7-8-9->
         [ drop(4)          ]
         ---------5-6-7-8-9->
         ```
+
+        :rtype: {py:class}`Pipe`
         """
         check_int_zero_or_positive('n', n)
         def pipe_drop(res):
@@ -1362,6 +1822,14 @@ class Pipe:
         item and all following items without testing them.
 
         See {py:func}`itertools.dropwhile`.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9]).dropwhile(lambda x: x <= 4).list()
+        Out[1]: [5, 6, 7, 8, 9]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_dropwhile(res):
             return itertools.dropwhile(pred, res)
@@ -1374,6 +1842,14 @@ class Pipe:
         See {external:py:func}`enumerate`.
 
         Contrast with {py:meth}`Pipe.enumerate_info`.
+
+        ```{ipython}
+
+        In [1]: Pipe('abc').enumerate().list()
+        Out[1]: [(0, 'a'), (1, 'b'), (2, 'c')]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_enumerate(res):
             return builtins.enumerate(res, start=start)
@@ -1391,6 +1867,17 @@ class Pipe:
         - `.is_last`: Whether this is the last item.
 
         Contrast with {py:meth}`Pipe.enumerate`.
+
+        ```{ipython}
+
+        In [1]: Pipe('abc').enumerate_info().list()
+        Out[1]:
+        [(<EnumerateInfo index=0 is_first=True is_last=False>, 'a'),
+         (<EnumerateInfo index=1 is_first=False is_last=False>, 'b'),
+         (<EnumerateInfo index=2 is_first=False is_last=True>, 'c')]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         check_int('start', start)
         def pipe_enumerate_info(pipe):
@@ -1408,6 +1895,14 @@ class Pipe:
         {{pipe_step}} Yield items for which `func(item)` is true.
 
         See {external:py:func}`filter`.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 4, 5]).filter(lambda x: x % 2 == 0).list()
+        Out[1]: [2, 4]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_filter(res):
             return builtins.filter(func, res)
@@ -1426,15 +1921,17 @@ class Pipe:
 
         ```{ipython}
 
-        In [1]: P(['a', ['b', ['c', ['d', ['e']]]]]).flatten().list()
+        In [1]: Pipe(['a', ['b', ['c', ['d', ['e']]]]]).flatten().list()
         Out[1]: ['a', 'b', 'c', 'd', 'e']
 
-        In [1]: P(['a', ['b', ['c', ['d', ['e']]]]]).flatten(levels=1).list()
+        In [1]: Pipe(['a', ['b', ['c', ['d', ['e']]]]]).flatten(levels=1).list()
         Out[1]: ['a', 'b', ['c', ['d', ['e']]]]
 
-        In [1]: P(['a', ['b', ['c', ['d', ['e']]]]]).flatten(levels=2).list()
+        In [1]: Pipe(['a', ['b', ['c', ['d', ['e']]]]]).flatten(levels=2).list()
         Out[1]: ['a', 'b', 'c', ['d', ['e']]]
         ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_flatten(res):
             return flatten(res, levels=levels)
@@ -1446,6 +1943,20 @@ class Pipe:
 
         If `fillvalue` is provided and the final span is shorter than `n`, pad
         it with `fillvalue`.
+
+        ```{ipython}
+
+        In [1]: Pipe(['a', 'b', 'c', 'd', 'e']).intersperse('x').list()
+        Out[1]: ['a', 'x', 'b', 'x', 'c', 'x', 'd', 'x', 'e']
+
+        In [1]: Pipe(['a', 'b', 'c', 'd', 'e']).intersperse('x', n=2).list()
+        Out[1]: ['a', 'b', 'x', 'c', 'd', 'x', 'e']
+
+        In [1]: Pipe(['a', 'b', 'c', 'd', 'e']).intersperse('x', n=2, fillvalue='y').list()
+        Out[1]: ['a', 'b', 'x', 'c', 'd', 'x', 'e', 'y']
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         check_int_positive('n', n)
         def pipe_intersperse(ix):
@@ -1474,6 +1985,14 @@ class Pipe:
     def label(self, *keys, fillvalue=_MISSING, strict=False):
         """
         {{pipe_step}} Yield dicts representing each of `keys` zipped with each item.
+
+        ```{ipython}
+
+        In [1]: Pipe([(1, 2), (3, 4), (5, 6)]).label('x', 'y').list()
+        Out[1]: [{'x': 1, 'y': 2}, {'x': 3, 'y': 4}, {'x': 5, 'y': 6}]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_label(res, cls):
             for item in res:
@@ -1485,6 +2004,14 @@ class Pipe:
         {{pipe_step}} Yield each item mapped through `func`.
 
         See {external:py:func}`map`.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 4, 5]).map(lambda x: x * 2).list()
+        Out[1]: [2, 4, 6, 8, 10]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_map(res):
             return builtins.map(func, res)
@@ -1496,6 +2023,14 @@ class Pipe:
 
         `next_value` is {py:data}`END` (bound to {py:attr}`Pipe.peek.END` as
         well) if the current value is the last one.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3]).peek().list()
+        Out[1]: [(1, 2), (2, 3), (3, <END>)]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_peek(ix):
             try:
@@ -1527,6 +2062,38 @@ class Pipe:
         evaluation.
 
         See {py:func}`itertools.permutations`.
+
+        ```{ipython}
+
+        In [1]: Pipe('abc').permutations(k=2).list()
+        Out[1]: [('a', 'b'), ('a', 'c'), ('b', 'a'), ('b', 'c'), ('c', 'a'), ('c', 'b')]
+
+        In [1]: Pipe('abc').permutations(k=(1, 3)).list()
+        Out[1]:
+        [('a',),
+         ('b',),
+         ('c',),
+         ('a', 'b'),
+         ('a', 'c'),
+         ('b', 'a'),
+         ('b', 'c'),
+         ('c', 'a'),
+         ('c', 'b'),
+         ('a', 'b', 'c'),
+         ('a', 'c', 'b'),
+         ('b', 'a', 'c'),
+         ('b', 'c', 'a'),
+         ('c', 'a', 'b'),
+         ('c', 'b', 'a')]
+        ```
+
+        :rtype: {py:class}`Pipe`
+        :stage flow:
+          Input
+          : `list(*(Iterable[T], ...))`{l=python}
+
+          Output
+          : `*((tuple[T], ...), ...)`{l=python}
         """
         k_min, k_max = check_k_args('k', k, default=_POOL)
         def pipe_permutations(seq):
@@ -1540,11 +2107,22 @@ class Pipe:
         {{pipe_step}} Yield all items from each of `iterables` in order, and
         then yield each of the source's items.
 
-        Compare with {py:meth}`Pipe.concat`, which yields the source's items
-        first, and then yields from each of iterables.
+        Compare with:
 
-        Contrast with {py:meth}`Pipe.chain`, which treats each source item as a
-        sub-iterable to yield items from.
+        - {py:meth}`Pipe.append`, which yields the source's items first,
+          and then yields the provided items in order.
+        - {py:meth}`Pipe.concat`, which yields the source's items first,
+          and then yields from each provided iterable in order.
+        - {py:meth}`Pipe.prepend`, which yields the provided items in
+          order first, and then yields the source's items.
+
+        ```{ipython}
+
+        In [1]: Pipe(['a', 'b', 'c']).precat(['d', 'e', 'f']).list()
+        Out[1]: ['d', 'e', 'f', 'a', 'b', 'c']
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_precat(res):
             return itertools.chain(*iterables, res)
@@ -1555,8 +2133,22 @@ class Pipe:
         {{pipe_step}} Yield each of `items`, and then yield each of the source's
         items.
 
-        Compare with {py:meth}`Pipe.append`, which yields the source's items
-        first, and then yields the `items`.
+        Compare with:
+
+        - {py:meth}`Pipe.append`, which yields the source's items first,
+          and then yields the provided items in order.
+        - {py:meth}`Pipe.concat`, which yields the source's items first,
+          and then yields from each provided iterable in order.
+        - {py:meth}`Pipe.precat`, which first yields from each provided
+          iterable in order, and then yields the source's items,
+
+        ```{ipython}
+
+        In [1]: Pipe(['a', 'b', 'c']).prepend('d', 'e', 'f').list()
+        Out[1]: ['d', 'e', 'f', 'a', 'b', 'c']
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_prepend(res):
             return itertools.chain(items, res)
@@ -1567,6 +2159,14 @@ class Pipe:
         {{pipe_step}} Yield items for which `func(item)` is false.
 
         See {external:py:func}`itertools.filterfalse`.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 4, 5]).reject(lambda x: x % 2 == 0).list()
+        Out[1]: [1, 3, 5]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_reject(res):
             return itertools.filterfalse(func, res)
@@ -1619,6 +2219,24 @@ class Pipe:
 
         For any `kwargs` provided, act as if `kwargs` was a mapping passed as an
         `arg` above.
+
+        ```{ipython}
+
+        In [1]: Pipe([
+           ...: {'a': 1, 'b': 2, 'c': 3},
+           ...:  {'b': 4, 'c': 5, 'd': 6},
+           ...:  {'c': 7, 'd': 8, 'e': 9},
+           ...: ]).remap(
+           ...:      ...,
+           ...:      'c',
+           ...:      {'b': Pipe.DROP},
+           ...:      d=Pipe.DROP,
+           ...:      f=lambda x: Pipe.DROP,
+           ...:  ).list()
+        Out[1]: [{'c': 3, 'a': 1}, {'c': 5}, {'c': 7, 'e': 9}]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         p = self.clone()
         def pipe_remap(res):
@@ -1695,6 +2313,14 @@ class Pipe:
         evaluation.
 
         See {external:py:func}`reversed`.
+
+        ```{ipython}
+
+        In [1]: Pipe(['a', 'b', 'c', 'd', 'e']).reverse().list()
+        Out[1]: ['e', 'd', 'c', 'b', 'a']
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_reverse(seq):
             return reversed(seq)
@@ -1720,6 +2346,23 @@ class Pipe:
         evaluation.
 
         See {external:py:func}`random.sample`.
+
+        ```{ipython}
+
+        @suppress
+        In [1]: import random; random.seed(0)
+
+        In [1]: Pipe('abc').sample(k=2).take(5).list()
+        Out[1]: [('b', 'c'), ('a', 'b'), ('c', 'b'), ('b', 'c'), ('b', 'c')]
+
+        @suppress
+        In [1]: import random; random.seed(0)
+
+        In [1]: Pipe('abc').sample(k=2, replacement=True).take(5).list()
+        Out[1]: [('c', 'c'), ('b', 'a'), ('b', 'b'), ('c', 'a'), ('b', 'b')]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         k_min, k_max = check_k_args('k', k, default=_POOL)
         def pipe_sample(seq, rng):
@@ -1737,6 +2380,14 @@ class Pipe:
         Akin to a `fold` that yields each intermediate result.
 
         See {py:func}`itertools.accumulate`.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 4, 5]).scan(lambda a, b: a + b).list()
+        Out[1]: [1, 3, 6, 10, 15]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_scan(res):
             return itertools.accumulate(res, func, initial=initial)
@@ -1752,6 +2403,23 @@ class Pipe:
         ```
 
         See {py:func}`itertools.islice`.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 4, 5]).slice().list()
+        Out[1]: [1, 2, 3, 4, 5]
+
+        In [1]: Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).slice(4).list()
+        Out[1]: [1, 2, 3, 4]
+
+        In [1]: Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).slice(stop=4).list()
+        Out[1]: [1, 2, 3, 4]
+
+        In [1]: Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).slice(start=4).list()
+        Out[1]: [5, 6, 7, 8, 9, 10]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         start, stop, step = check_slice_args('slice', args, kwargs)
         def pipe_slice(res):
@@ -1768,6 +2436,17 @@ class Pipe:
         `key` can either be provided as a callable, or a string
 
         See {external:py:func}`sorted`.
+
+        ```{ipython}
+
+        In [1]: Pipe([2, 4, 1, 5, 3]).sort().list()
+        Out[1]: [1, 2, 3, 4, 5]
+
+        In [1]: Pipe([2, 4, 1, 5, 3]).sort(reverse=True).list()
+        Out[1]: [5, 4, 3, 2, 1]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_sort(res):
             return sorted(res, key=key, reverse=reverse)
@@ -1796,6 +2475,35 @@ class Pipe:
           value`.
         - If `value` is any other object, a new split will be started if `item ==
           value`.
+
+        ```{ipython}
+
+        In [1]: Pipe('abcdefghij').split(index=5).list()
+        Out[1]: [['a', 'b', 'c', 'd', 'e'], ['f', 'g', 'h', 'i', 'j']]
+
+        In [1]: Pipe('abcdefghij').split(index=[3, 5, 8]).list()
+        Out[1]: [['a', 'b', 'c'], ['d', 'e'], ['f', 'g', 'h'], ['i', 'j']]
+
+        In [1]: Pipe('abcdefghij').split(index={3, 5, 8}).list()
+        Out[1]: [['a', 'b', 'c'], ['d', 'e'], ['f', 'g', 'h'], ['i', 'j']]
+
+        In [1]: Pipe('abcdefghij').split(index=lambda x: x % 2 == 0).list()
+        Out[1]: [['a', 'b'], ['c', 'd'], ['e', 'f'], ['g', 'h'], ['i', 'j']]
+
+        In [1]: Pipe('abcdefghij').split(value='d').list()
+        Out[1]: [['a', 'b', 'c'], ['d', 'e', 'f', 'g', 'h', 'i', 'j']]
+
+        In [1]: Pipe('abcdefghij').split(value=['c', 'g']).list()
+        Out[1]: [['a', 'b'], ['c', 'd', 'e', 'f'], ['g', 'h', 'i', 'j']]
+
+        In [1]: Pipe('abcdefghij').split(value={'c', 'g'}).list()
+        Out[1]: [['a', 'b'], ['c', 'd', 'e', 'f'], ['g', 'h', 'i', 'j']]
+
+        In [1]: Pipe('aBcdefgHij').split(value=str.isupper).list()
+        Out[1]: [['a'], ['B', 'c', 'd', 'e', 'f', 'g'], ['H', 'i', 'j']]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_split(res):
             target = []
@@ -1842,12 +2550,26 @@ class Pipe:
 
     def sponge(self, sink):
         """
-        {{pipe_step}} Evaluate the Pipe up to this point using `sink`, and
+        {{pipe_step}} Evaluate the pipe up to this point using `sink`, and
         continue the pipe yielding its single result.
 
         `sink` can either be a `Pipe` sink method called as a classmethod (e.g.,
         `Pipe.sum()`), or any function that accepts an iterable and returns a
         single result (e.g., `sum`).
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).sponge(Pipe.sum()).list()
+        Out[1]: [55]
+
+        In [1]: Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).sponge(sum).list()
+        Out[1]: [55]
+
+        In [1]: Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).sponge(Pipe.sum()).map(lambda x: x * 2).list()
+        Out[1]: [110]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_sponge(res):
             yield sink(res)
@@ -1858,6 +2580,14 @@ class Pipe:
         {{pipe_step}} For each item, yield `func(*item)`.
 
         See {py:func}`itertools.starmap`.
+
+        ```{ipython}
+
+        In [1]: Pipe([(), (1,), (2, 3), (4, 5, 6), (7, 8, 9, 10)]).starmap(lambda *x: sum(x)).list()
+        Out[1]: [0, 1, 5, 15, 34]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_starmap(res):
             return itertools.starmap(func, res)
@@ -1867,11 +2597,19 @@ class Pipe:
         """
         {{pipe_step}} Yield the first `n` items and skip the rest.
 
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9]).take(4).list()
+        Out[1]: [1, 2, 3, 4]
+        ```
+
         ```{marble}
         -1-2-3-4-5-6-7-8-9->
         [ take(4)          ]
         -1-2-3-4-|
         ```
+
+        :rtype: {py:class}`Pipe`
         """
         check_int_zero_or_positive('n', n)
         def pipe_take(res):
@@ -1884,6 +2622,14 @@ class Pipe:
         item and all following items without testing them.
 
         See {py:func}`itertools.takewhile`.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9]).takewhile(lambda x: x <= 4).list()
+        Out[1]: [1, 2, 3, 4]
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_takewhile(res):
             return itertools.takewhile(pred, res)
@@ -1893,6 +2639,22 @@ class Pipe:
         """
         {{pipe_step}} For each item, call `func(item)` as a side effect
         and yield the item unchanged.
+
+        ```{ipython}
+
+        In [1]: tapped = []
+
+        In [1]: def tapper(item):
+           ...:     tapped.append(item.upper())
+
+        In [1]: Pipe(['a', 'b', 'c', 'd', 'e']).tap(tapper).list()
+        Out[1]: ['a', 'b', 'c', 'd', 'e']
+
+        In [1]: tapped
+        Out[1]: ['A', 'B', 'C', 'D', 'E']
+        ```
+
+        :rtype: {py:class}`Pipe`
         """
         def pipe_tap(res):
             for item in res:
@@ -1917,6 +2679,8 @@ class Pipe:
         [ unique()             ]
         -a-b---c-----------d--->
         ```
+
+        :rtype: {py:class}`Pipe`
         """
         match key:
             case Callable() | Sentinel():
@@ -1950,6 +2714,23 @@ class Pipe:
         Contrast with {py:meth}`Pipe.any` and {py:meth}`Pipe.none`.
 
         See {external:py:func}`all`.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 1, 2, 4, 3, 1]).all()
+        Out[1]: True
+
+        In [1]: Pipe([1, 1, 0, 4, 3, 1]).all()
+        Out[1]: False
+
+        In [1]: Pipe([1, 1, 2, 4, 3, 1]).all(lambda x: x != 5)
+        Out[1]: True
+
+        In [1]: Pipe([1, 5, 0, 4, 3, 1]).all(lambda x: x != 5)
+        Out[1]: False
+        ```
+
+        :rtype: {external:py:class}`bool`
         """
         def pipe_all(res):
             if pred is _MISSING:
@@ -1970,6 +2751,23 @@ class Pipe:
         Contrast with {py:meth}`Pipe.all` and {py:meth}`Pipe.none`.
 
         See {external:py:func}`any`.
+
+        ```{ipython}
+
+        In [1]: Pipe([0, 0, 0, 3, 0]).any()
+        Out[1]: True
+
+        In [1]: Pipe([0, 0, 0, 0, 0]).any()
+        Out[1]: False
+
+        In [1]: Pipe([5, 5, 5, 4, 5]).any(lambda x: x != 5)
+        Out[1]: True
+
+        In [1]: Pipe([5, 5, 5, 5, 5]).any(lambda x: x != 5)
+        Out[1]: False
+        ```
+
+        :rtype: {external:py:class}`bool`
         """
         def pipe_any(res):
             if pred is _MISSING:
@@ -1983,7 +2781,24 @@ class Pipe:
     @partialclassmethod
     def contains(self, value):
         """
-        {{pipe_sink}} Return `True` if any of this Pipe's items equals `value`.
+        {{pipe_sink}} Return `True` if any of this pipe's items equals `value`.
+
+        ```{ipython}
+
+        In [1]: Pipe([5, 3, 4, 1, 2]).contains(3)
+        Out[1]: True
+
+        In [1]: Pipe([5, 3, 4, 1, 2]).contains(6)
+        Out[1]: False
+
+        In [1]: Pipe(iter([5, 3, 4, 1, 2])).contains(3)
+        Out[1]: True
+
+        In [1]: Pipe(iter([5, 3, 4, 1, 2])).contains(6)
+        Out[1]: False
+        ```
+
+        :rtype: {external:py:class}`bool`
         """
         def pipe_contains(res):
             match res:
@@ -1996,7 +2811,21 @@ class Pipe:
     @partialclassmethod
     def count(self):
         """
-        {{pipe_sink}} Return the number of values in this Pipe.
+        {{pipe_sink}} Return the number of values in this pipe.
+
+        ```{ipython}
+
+        In [1]: Pipe(['a', 'b', 'c', 'd', 'e']).count()
+        Out[1]: 5
+
+        In [1]: Pipe(iter(['a', 'b', 'c', 'd', 'e'])).count()
+        Out[1]: 5
+
+        In [1]: Pipe([]).count()
+        Out[1]: 0
+        ```
+
+        :rtype: {external:py:class}`int`
         """
         def pipe_count(res):
             match res:
@@ -2016,6 +2845,20 @@ class Pipe:
 
         Contrast with {py:meth}`Pipe.identical`, returns true of all items
         compare equal (`a is b`).
+
+        ```{ipython}
+
+        In [1]: Pipe(['x', 'x', 'x', 'x', 'x']).equal()
+        Out[1]: True
+
+        In [1]: Pipe(['x', 'x', 'x', 'y', 'x']).equal()
+        Out[1]: False
+
+        In [1]: Pipe([]).equal(default='meow')
+        Out[1]: 'meow'
+        ```
+
+        :rtype: {external:py:class}`bool`
         """
         def pipe_equal(ix):
             try:
@@ -2034,6 +2877,18 @@ class Pipe:
     def exhaust(self):
         """
         {{pipe_sink}} Immediately exhaust the pipe and return `None`.
+
+        ```{ipython}
+        :okexcept:
+
+        In [1]: src = iter(['a', 'b', 'c', 'd', 'e'])
+
+        In [1]: p = Pipe(src)
+
+        In [1]: p.exhaust()
+
+        In [1]: next(src)
+        ```
         """
         def pipe_exhaust(res):
             collections.deque(res, maxlen=0)
@@ -2042,12 +2897,21 @@ class Pipe:
     @partialclassmethod
     def fold(self, func, initial=_MISSING):
         """
-        {{pipe_sink}} Apply binary `func` to this Pipe, reducing it to a single
+        {{pipe_sink}} Apply binary `func` to this pipe, reducing it to a single
         value.
 
         `func` should be a function of two arguments.
 
         See {external:py:func}`functools.reduce`.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 4, 5]).fold(lambda a, b: a + b)
+        Out[1]: 15
+
+        In [1]: Pipe([1, 2, 3, 4, 5]).fold(lambda a, b: a + b, initial=6)
+        Out[1]: 21
+        ```
         """
         def pipe_fold(res):
             if initial is _MISSING:
@@ -2058,8 +2922,17 @@ class Pipe:
     @partialclassmethod
     def frequencies(self):
         """
-        {{pipe_sink}} Return a {py:class}`collections.Counter` for this Pipe's
+        {{pipe_sink}} Return a {py:class}`collections.Counter` for this pipe's
         items.
+
+        ```{ipython}
+
+        In [1]: (Pipe(['a', 'b', 'a', 'a', 'b', 'c', 'd', 'b', 'b', 'a', 'c', 'e', 'a'])
+           ...: .frequencies())
+        Out[1]: Counter({'a': 5, 'b': 4, 'c': 2, 'd': 1, 'e': 1})
+        ```
+
+        :rtype: {external:py:class}`collections.Counter`
         """
         def pipe_frequencies(res):
             return collections.Counter(res)
@@ -2068,11 +2941,18 @@ class Pipe:
     @partialclassmethod
     def groupby(self, key):
         """
-        {{pipe_sink}} Return a {py:class}`dict` grouping together elements under
-        the same `key` function result.
+        {{pipe_sink}} Return a {external:py:class}`dict` grouping
+        together elements under the same `key` function result.
 
         Contrast with {py:meth}`Pipe.chunkby`, which is a step that yields
         groups of matching adjacent elements.
+
+        ```{ipython}
+
+        In [1]: (Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+           ...: .groupby(lambda x: 'even' if x % 2 == 0 else 'odd'))
+        Out[1]: {'odd': [1, 3, 5, 7, 9], 'even': [2, 4, 6, 8, 10]}
+        ```
         """
         def pipe_groupby(res):
             ret = collections.defaultdict(list)
@@ -2091,6 +2971,24 @@ class Pipe:
 
         Contrast with {py:meth}`Pipe.equal`, returns true of all items compare
         equal (`a == b`).
+
+        ```{ipython}
+
+        In [1]: x = object()
+
+        In [1]: Pipe([x, x, x, x, x]).identical()
+        Out[1]: True
+
+        In [1]: y = object()
+
+        In [1]: Pipe([x, x, y, x, x]).identical()
+        Out[1]: False
+
+        In [1]: Pipe([]).identical(default='meow')
+        Out[1]: 'meow'
+        ```
+
+        :rtype: {external:py:class}`bool`
         """
         def pipe_identical(ix):
             try:
@@ -2108,13 +3006,25 @@ class Pipe:
     @partialclassmethod
     def max(self, *, default=_MISSING, key=None):
         """
-        {{pipe_sink}} Return the maximum value for this Pipe.
+        {{pipe_sink}} Return the maximum value for this pipe.
 
         If `default` is provided, return it if the iterable is empty.
 
         If `key` is provided, use it to determine the comparison value for each item.
 
         See {external:py:func}`max`.
+
+        ```{ipython}
+
+        In [1]: Pipe([3, 2, 5, 1, 4]).max()
+        Out[1]: 5
+
+        In [1]: Pipe([3, 2, 5, 1, 4]).max(key=lambda x: -x)
+        Out[1]: 1
+
+        In [1]: Pipe([]).max(default='meow')
+        Out[1]: 'meow'
+        ```
         """
         def pipe_max(res):
             if default is _MISSING:
@@ -2125,13 +3035,22 @@ class Pipe:
     @partialclassmethod
     def mean(self, *, default=_MISSING):
         """
-        {{pipe_sink}} Return the mean (average value) of this Pipe's items.
+        {{pipe_sink}} Return the mean (average value) of this pipe's items.
 
         If `default` is provided, return it if the iterable is empty.
 
         Contrast with {py:meth}`Pipe.median` and {py:meth}`Pipe.mode`.
 
         See {external:py:func}`statistics.mean`.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 5, 8]).mean()
+        Out[1]: 3.8
+
+        In [1]: Pipe([]).mean(default='meow')
+        Out[1]: 'meow'
+        ```
         """
         def pipe_mean(seq):
             try:
@@ -2145,13 +3064,25 @@ class Pipe:
     @partialclassmethod
     def median(self, *, default=_MISSING):
         """
-        {{pipe_sink}} Return the median (middle value) of this Pipe's items.
+        {{pipe_sink}} Return the median (middle value) of this pipe's items.
 
         If `default` is provided, return it if the iterable is empty.
 
         Contrast with {py:meth}`Pipe.mean` and {py:meth}`Pipe.mode`.
 
         See {external:py:func}`statistics.median`.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 5, 8]).median()
+        Out[1]: 3
+
+        In [1]: Pipe([1, 2, 3, 5, 8, 13]).median()
+        Out[1]: 4.0
+
+        In [1]: Pipe([]).median(default='meow')
+        Out[1]: 'meow'
+        ```
         """
         def pipe_median(res):
             try:
@@ -2165,7 +3096,7 @@ class Pipe:
     @partialclassmethod
     def merge(self, /, *, sequence='replace'):
         """
-        {{pipe_sink}} Recursively merge this Pipe's mapping items into a single
+        {{pipe_sink}} Recursively merge this pipe's mapping items into a single
         mapping.
 
         All collections in the resulting mapping are deep-copied and thus safe
@@ -2206,6 +3137,14 @@ class Pipe:
             sequences. It should accept two positional arguments: `old_sequence,
             new_sequence`, and return an appropriate item. (It is safe to return an
             argument from a `sequence` callable unchanged or mutated.)
+
+        ```{ipython}
+
+        In [1]: Pipe([{'a': 1, 'b': 2}, {'b': 3, 'c': 4}]).merge()
+        Out[1]: {'a': 1, 'b': 3, 'c': 4}
+        ```
+
+        :rtype: {py:class}`Mapping <collections.abc.Mapping>`
         """
         def pipe_merge(res):
             return merge(res, sequence=sequence)
@@ -2214,13 +3153,25 @@ class Pipe:
     @partialclassmethod
     def min(self, *, default=_MISSING, key=None):
         """
-        {{pipe_sink}} Return the minimum value for this Pipe.
+        {{pipe_sink}} Return the minimum value for this pipe.
 
         If `default` is provided, return it if the iterable is empty.
 
         If `key` is provided, use it to determine the comparison value for each item.
 
         See {external:py:func}`min`.
+
+        ```{ipython}
+
+        In [1]: Pipe([3, 2, 5, 1, 4]).min()
+        Out[1]: 1
+
+        In [1]: Pipe([3, 2, 5, 1, 4]).min(key=lambda x: -x)
+        Out[1]: 5
+
+        In [1]: Pipe([]).min(default='meow')
+        Out[1]: 'meow'
+        ```
         """
         def pipe_min(res):
             if default is _MISSING:
@@ -2231,13 +3182,25 @@ class Pipe:
     @partialclassmethod
     def minmax(self, *, default=_MISSING, key=None):
         """
-        {{pipe_sink}} Return a tuple of `(min_value, max_value)` for this Pipe.
+        {{pipe_sink}} Return a tuple of `(min_value, max_value)` for this pipe.
 
         If `default` is provided, return `(default, default)` if the iterable is empty.
 
         If `key` is provided, use it to determine the comparison value for each item.
 
         See {external:py:func}`min` and {external:py:func}`max`.
+
+        ```{ipython}
+
+        In [1]: Pipe([3, 2, 5, 1, 4]).minmax()
+        Out[1]: (1, 5)
+
+        In [1]: Pipe([3, 2, 5, 1, 4]).minmax(key=lambda x: -x)
+        Out[1]: (5, 1)
+
+        In [1]: Pipe([]).minmax(default='meow')
+        Out[1]: ('meow', 'meow')
+        ```
         """
         def pipe_minmax(ix):
             try:
@@ -2255,7 +3218,7 @@ class Pipe:
     @partialclassmethod
     def mode(self, *, default=_MISSING):
         """
-        {{pipe_sink}} Return the modes (most common values) of this Pipe's
+        {{pipe_sink}} Return the modes (most common values) of this pipe's
         items.
 
         If `default` is provided, return it if the iterable is empty.
@@ -2265,6 +3228,21 @@ class Pipe:
         {external:py:func}`statistics.multimode`.
 
         Contrast with {py:meth}`Pipe.mean` and {py:meth}`Pipe.median`.
+
+        ```{ipython}
+
+        In [1]: Pipe([6, 1, 1, 2, 2, 3, 3, 4, 5, 1, 1, 6]).mode()
+        Out[1]: (1,)
+
+        In [1]: Pipe([6, 1, 1, 2, 2, 3, 3, 4, 5, 1, 1, 6, 6, 6]).mode()
+        Out[1]: (6, 1)
+
+        In [1]: Pipe([]).mode(default='meow')
+        Out[1]: 'meow'
+
+        In [1]: Pipe([]).mode()
+        Out[1]: ()
+        ```
         """
         def pipe_mode(res):
             modes = statistics.multimode(res)
@@ -2281,6 +3259,23 @@ class Pipe:
         If `pred` is missing, `bool(item)` will be used instead.
 
         Contrast with {py:meth}`Pipe.all` and {py:meth}`Pipe.any`.
+
+        ```{ipython}
+
+        In [1]: Pipe([0, 0, 0, 0, 0]).none()
+        Out[1]: True
+
+        In [1]: Pipe([0, 0, 0, 3, 0]).none()
+        Out[1]: False
+
+        In [1]: Pipe([5, 5, 5, 5, 5]).none(lambda x: x != 5)
+        Out[1]: True
+
+        In [1]: Pipe([5, 5, 5, 4, 5]).none(lambda x: x != 5)
+        Out[1]: False
+        ```
+
+        :rtype: {external:py:class}`bool`
         """
         def pipe_none(res):
             if pred is _MISSING:
@@ -2295,6 +3290,21 @@ class Pipe:
     def nth(self, n, default=_MISSING):
         """
         {{pipe_sink}} Return the `n`-th item.
+
+        ```{ipython}
+
+        In [1]: Pipe(['a', 'b', 'c', 'd', 'e']).nth(2)
+        Out[1]: 'c'
+
+        In [1]: Pipe(iter(['a', 'b', 'c', 'd', 'e'])).nth(2)
+        Out[1]: 'c'
+
+        In [1]: Pipe(['a', 'b', 'c', 'd', 'e']).nth(5, default='meow')
+        Out[1]: 'meow'
+
+        In [1]: Pipe(iter(['a', 'b', 'c', 'd', 'e'])).nth(5, default='meow')
+        Out[1]: 'meow'
+        ```
         """
         def pipe_nth(res):
             match res:
@@ -2318,10 +3328,16 @@ class Pipe:
     @partialclassmethod
     def struct_pack(self, format_, /):
         """
-        {{pipe_sink}} Return packed {external:py:class}`bytes` from this Pipe's
+        {{pipe_sink}} Return packed {external:py:class}`bytes` from this pipe's
         items using `format`.
 
         See {external:py:func}`struct.pack`.
+
+        ```{ipython}
+
+        In [1]: Pipe([1464812877, 1179602775]).struct_pack('<i')
+        Out[1]: b'MEOWWOOF'
+        ```
         """
         def pipe_struct_pack(pipe):
             fsize = calc_struct_input(format_)
@@ -2340,6 +3356,15 @@ class Pipe:
 
         If `func` is provided, `func(item)` will be used to determine an item's
         truth value.
+
+        ```{ipython}
+
+        In [1]: Pipe([0, 0, 1, 0, 1, True, 1, 2, 0, 3, 0, False, 5]).partition()
+        Out[1]: ((1, 1, True, 1, 2, 3, 5), (0, 0, 0, 0, 0, False))
+
+        In [1]: Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).partition(lambda x: x % 2 == 0)
+        Out[1]: ((2, 4, 6, 8, 10), (1, 3, 5, 7, 9))
+        ```
         """
         def pipe_partition(res):
             ret_true = []
@@ -2356,12 +3381,18 @@ class Pipe:
     @partialclassmethod
     def product(self):
         """
-        {{pipe_sink}} Return the arithmetical multiplication of the Pipe's
+        {{pipe_sink}} Return the arithmetical multiplication of the pipe's
         items.
 
         Contrast with {py:meth}`Pipe.cartesian_product`.
 
         See {external:py:func}`math.prod`.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 4, 5]).product()
+        Out[1]: 120
+        ```
         """
         def pipe_product(res):
             return math.prod(res)
@@ -2370,9 +3401,18 @@ class Pipe:
     @partialclassmethod
     def shuffle(self):
         """
-        {{pipe_sink}} Return a new shuffled list from this Pipe's items.
+        {{pipe_sink}} Return a new shuffled list from this pipe's items.
 
         Compare with {py:meth}`Pipe.sample`, which can yield repeated shuffles.
+
+        ```{ipython}
+
+        @suppress
+        In [1]: import random; random.seed(0)
+
+        In [1]: Pipe('abcdef').shuffle()
+        Out[1]: ['e', 'c', 'b', 'a', 'f', 'd']
+        ```
         """
         def pipe_shuffle(mutseq, rng):
             ret = mutseq.copy()
@@ -2383,7 +3423,7 @@ class Pipe:
     @partialclassmethod
     def stdev(self, sample=False, mean=None):
         """
-        {{pipe_sink}} Return the standard deviation of the Pipe's items.
+        {{pipe_sink}} Return the standard deviation of the pipe's items.
 
         If `sample` is true, calculate the *sample* standard deviation;
         otherwise, calculate the population standard deviation.
@@ -2392,6 +3432,15 @@ class Pipe:
         sample or population.
 
         See {py:func}`statistics.stdev` and {py:func}`statistics.pstdev`.
+
+        ```{ipython}
+
+        In [1]: Pipe([4, 6, 6, 6, 7, 7, 9, 11]).stdev()
+        Out[1]: 2.0
+
+        In [1]: Pipe([4, 6, 6, 6, 7, 7, 9, 11]).stdev(sample=True)
+        Out[1]: 2.138089935299395
+        ```
         """
         def pipe_stdev(seq):
             if sample:
@@ -2402,9 +3451,15 @@ class Pipe:
     @partialclassmethod
     def sum(self):
         """
-        {{pipe_sink}} Return the arithmetical addition of the Pipe's items.
+        {{pipe_sink}} Return the arithmetical addition of the pipe's items.
 
         See {external:py:func}`sum`.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 4, 5]).sum()
+        Out[1]: 15
+        ```
         """
         def pipe_sum(res):
             return builtins.sum(res)
@@ -2413,7 +3468,7 @@ class Pipe:
     @partialclassmethod
     def variance(self, sample=False, mean=None):
         """
-        {{pipe_sink}} Return the variance of the Pipe's items.
+        {{pipe_sink}} Return the variance of the pipe's items.
 
         If `sample` is true, calculate the *sample* variance; otherwise,
         calculate the population variance.
@@ -2422,6 +3477,15 @@ class Pipe:
         sample or population.
 
         See {py:func}`statistics.variance` and {py:func}`statistics.pvariance`.
+
+        ```{ipython}
+
+        In [1]: Pipe([4, 6, 6, 6, 7, 7, 9, 11]).variance()
+        Out[1]: 4
+
+        In [1]: Pipe([4, 6, 6, 6, 7, 7, 9, 11]).variance(sample=True)
+        Out[1]: 4.571428571428571
+        ```
         """
         def pipe_variance(seq):
             if sample:
@@ -2440,6 +3504,12 @@ class Pipe:
         If `key` is provided, use it to determine the comparison value for each item.
 
         See {external:py:func}`min`.
+
+        ```{ipython}
+
+        In [1]: Pipe([2, 5, 4, 1, 3]).width()
+        Out[1]: 4
+        ```
         """
         def pipe_width(pipe):
             min_value, max_value = pipe.minmax(default=default, key=key)
@@ -2452,8 +3522,16 @@ class Pipe:
     @partialclassmethod
     def array(self, typecode):
         """
-        {{pipe_sink}} Return an {external:py:class}`array.array` of the Pipe's
+        {{pipe_sink}} Return an {external:py:class}`array.array` of the pipe's
         items, using `typecode`.
+
+        ```{ipython}
+
+        In [1]: Pipe(b'abcde').array('b')
+        Out[1]: array('b', [97, 98, 99, 100, 101])
+        ```
+
+        :rtype: {external:py:class}`array.array`
         """
         def pipe_array(ix):
             return array.array(typecode, ix)
@@ -2463,7 +3541,15 @@ class Pipe:
     def bytes(self, sep=b''):
         """
         {{pipe_sink}} Return a {external:py:class}`bytes` concatenation of the
-        Pipe's items.
+        pipe's items.
+
+        ```{ipython}
+
+        In [1]: Pipe([b'a', b'b', b'c', b'd', b'e']).bytes()
+        Out[1]: b'abcde'
+        ```
+
+        :rtype: {external:py:class}`bytes`
         """
         def pipe_bytes(res):
             return sep.join(res)
@@ -2473,7 +3559,15 @@ class Pipe:
     def deque(self):
         """
         {{pipe_sink}} Return a {external:py:class}`collections.deque` of the
-        Pipe's items.
+        pipe's items.
+
+        ```{ipython}
+
+        In [1]: Pipe(['a', 'b', 'c', 'd', 'e']).deque()
+        Out[1]: deque(['a', 'b', 'c', 'd', 'e'])
+        ```
+
+        :rtype: {external:py:class}`collections.deque`
         """
         def pipe_deque(res):
             return collections.deque(res)
@@ -2482,8 +3576,16 @@ class Pipe:
     @partialclassmethod
     def dict(self):
         """
-        {{pipe_sink}} Return a {external:py:class}`dict` of the Pipe's items,
+        {{pipe_sink}} Return a {external:py:class}`dict` of the pipe's items,
         treating each item as a `(key, value)` pair.
+
+        ```{ipython}
+
+        In [1]: Pipe([('a', 1), ('b', 2), ('c', 3), ('d', 4), ('e', 5)]).dict()
+        Out[1]: {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5}
+        ```
+
+        :rtype: {external:py:class}`dict`
         """
         def pipe_dict(res):
             return builtins.dict(res)
@@ -2492,7 +3594,15 @@ class Pipe:
     @partialclassmethod
     def list(self):
         """
-        {{pipe_sink}} Return a {external:py:class}`list` of the Pipe's items.
+        {{pipe_sink}} Return a {external:py:class}`list` of the pipe's items.
+
+        ```{ipython}
+
+        In [1]: Pipe(['a', 'b', 'c', 'd', 'e']).list()
+        Out[1]: ['a', 'b', 'c', 'd', 'e']
+        ```
+
+        :rtype: {external:py:class}`list`
         """
         def pipe_list(res):
             return builtins.list(res)
@@ -2501,7 +3611,15 @@ class Pipe:
     @partialclassmethod
     def set(self):
         """
-        {{pipe_sink}} Return a {external:py:class}`set` of the Pipe's items.
+        {{pipe_sink}} Return a {external:py:class}`set` of the pipe's items.
+
+        ```{ipython}
+
+        In [1]: Pipe(['a', 'b', 'c', 'd', 'e']).set()
+        Out[1]: {'a', 'b', 'c', 'd', 'e'}
+        ```
+
+        :rtype: {external:py:class}`set`
         """
         def pipe_set(res):
             return builtins.set(res)
@@ -2511,7 +3629,15 @@ class Pipe:
     def str(self, sep=''):
         """
         {{pipe_sink}} Return a {external:py:class}`str` concatenation of the
-        Pipe's items.
+        pipe's items.
+
+        ```{ipython}
+
+        In [1]: Pipe(['a', 'b', 'c', 'd', 'e']).str()
+        Out[1]: 'abcde'
+        ```
+
+        :rtype: {external:py:class}`str`
         """
         def pipe_str(res):
             return sep.join(res)
@@ -2520,7 +3646,15 @@ class Pipe:
     @partialclassmethod
     def tuple(self):
         """
-        {{pipe_sink}} Return a {external:py:class}`tuple` of the Pipe's items.
+        {{pipe_sink}} Return a {external:py:class}`tuple` of the pipe's items.
+
+        ```{ipython}
+
+        In [1]: Pipe(['a', 'b', 'c', 'd', 'e']).tuple()
+        Out[1]: ('a', 'b', 'c', 'd', 'e')
+        ```
+
+        :rtype: {external:py:class}`tuple`
         """
         def pipe_tuple(res):
             return builtins.tuple(res)
