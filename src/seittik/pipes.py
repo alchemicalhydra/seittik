@@ -1154,7 +1154,7 @@ class Pipe:
 
     def clamp(self, *args, min=MINIMUM, max=MAXIMUM):
         """
-        {{pipe_step} Yield values clamped between `min` and `max`.
+        {{pipe_step}} Yield values clamped between `min` and `max`.
 
         - If `min` is provided, any items less than `min` will yield `min`
           instead.
