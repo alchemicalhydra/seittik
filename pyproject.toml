@@ -28,9 +28,9 @@ order_by_type = false
 # -b : Set builder
 # -d : Doctree cache dir
 # -E : Don't cache, always read
-doc.cmd = './python_packages/bin/sphinx-build -a -E -d doc/.doctrees -b html doc doc/_build/html'
+doc.cmd = './python_packages/bin/sphinx-build -a -E -d doc/.doctrees -b dirhtml doc doc/_build/html'
 doc.help = "Build documentation"
-doclive.cmd = './python_packages/bin/sphinx-autobuild -a -d doc/.doctrees -E -b html --watch src/seittik --watch CHANGELOG.md --watch LICENSE.md doc doc/_build/html'
+doclive.cmd = './python_packages/bin/sphinx-autobuild -a -d doc/.doctrees -E -b dirhtml --watch src/seittik --watch CHANGELOG.md --watch LICENSE.md doc doc/_build/html'
 doclive.help = "Build documentation with live autoreload"
 # nox:
 nox.cmd = './python_packages/bin/nox'
