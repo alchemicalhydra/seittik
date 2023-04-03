@@ -54,8 +54,12 @@ html[data-theme="light"] .highlight .o {
 html[data-theme="light"] .highlight .nb {
   color: #007000;
 }
-/* number */
+/* number, int */
 html[data-theme="light"] .highlight .mi {
+  color: #4040a0;
+}
+/* number, float */
+html[data-theme="light"] .highlight .mf {
   color: #4040a0;
 }
 /* string */
