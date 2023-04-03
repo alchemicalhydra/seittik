@@ -46,7 +46,7 @@ def test_pipe_missing_source():
     p = Pipe()
     with pytest.raises(TypeError) as excinfo:
         list(p)
-    assert str(excinfo.value) == "A source must be provided to evaluate a Pipe"
+    assert str(excinfo.value) == "A source must be provided to evaluate a pipe"
 
 
 def test_pipe_missing_source_sink_partial():
