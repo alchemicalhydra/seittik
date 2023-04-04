@@ -325,6 +325,53 @@ In [1]: P.minmax()([3, 7, 2, 9, 6, 8])
 Out[1]: (2, 9)
 ```
 
+### Multilambdas With Pipes
+
+Most pipe stages that accept functions, such as {py:meth}`Pipe.filter`
+and {py:meth}`Pipe.map`, support "multilambdas": a way to express a
+multi-statement, quasi-anonymous function as part of the pipe's
+definition.
+
+It's easier to show than explain:
+
+```{ipython}
+
+# Rather silly, contrived example:
+In [1]: @Pipe.range(1, 10).map()
+   ...: def p(x):
+   ...:     if x == 5:
+   ...:         return 55
+   ...:     if x % 2 != 0:
+   ...:         return x * 3
+   ...:     return x
+   ...: @p.filter()
+   ...: def p(x):
+   ...:     if x * x > 20:
+   ...:         return True
+   ...:     if x - x < 10:
+   ...:         return False
+   ...:     return True
+   ...: @p.sort(key=True)
+   ...: def p(x):
+   ...:     if x > 9:
+   ...:         return -x
+   ...:     return x
+   ...: p.list()
+Out[1]: [55, 27, 21, 10, 6, 8, 9]
+```
+
+If a pipe method supports a multilambda parameter, what happens depends
+on whether the multilambda parameter is required or optional:
+
+- If the function parameter is required, all you need to do is omit the
+  parameter, and use the pipe expression as a decorator expression to the
+  multilambda function.
+- If the function parameter is optional (as shown above with
+  {py:meth}`Pipe.sort`), you must pass the appropriate sentinel value to
+  the parameter (in the method definition, shown as
+  `@multilambda('param_name', optional=sentinel_value)`{l=python}, so it
+  understands to act as a multilambda.
+
 ### Further Reading
 
 The <project:apidocs/index.md> has an overview of all the various Pipe

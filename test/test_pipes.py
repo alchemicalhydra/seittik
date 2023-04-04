@@ -323,7 +323,7 @@ def test_pipe_source_items():
     assert list(p) == [('a', 1), ('b', 2), ('c', 3)]
 
 
-# Pipe.iterfunc
+# Pipe.iterdir
 
 def test_pipe_source_iterdir(fs):
     import pathlib
@@ -340,7 +340,7 @@ def test_pipe_source_iterdir(fs):
 # Pipe.iterfunc
 
 def test_pipe_source_iterfunc():
-    p = Pipe.iterfunc(lambda x: x + 1, 13)
+    p = Pipe.iterfunc(13, lambda x: x + 1)
     assert list(p.take(5)) == [13, 14, 15, 16, 17]
 
 
@@ -462,7 +462,7 @@ def test_pipe_source_roll_size(random_seed_0):
 
 def test_pipe_source_unfold():
     build_pow2 = lambda x: (x, x * 2)
-    p = Pipe.unfold(build_pow2, 2)
+    p = Pipe.unfold(2, build_pow2)
     assert list(p.take(6)) == [2, 4, 8, 16, 32, 64]
 
 
@@ -471,7 +471,7 @@ def test_pipe_source_unfold_endearly():
         if x <= 8:
             return (x, x * 2)
         return
-    p = Pipe.unfold(endearly, 2)
+    p = Pipe.unfold(2, endearly)
     assert list(p) == [2, 4, 8]
 
 
@@ -933,6 +933,13 @@ def test_pipe_step_map():
     assert list(p) == [2, 4, 6, 8, 10]
 
 
+def test_pipe_step_map_multilambda():
+    @Pipe([1, 2, 3, 4, 5]).map()
+    def p(x):
+        return x * 2
+    assert list(p) == [2, 4, 6, 8, 10]
+
+
 # Pipe.peek
 
 def test_pipe_step_peek():
@@ -1331,6 +1338,13 @@ def test_pipe_sink_any_pred_true():
 def test_pipe_sink_any_pred_false():
     p = Pipe([5, 5, 5, 5, 5, 5])
     assert not p.any(lambda x: x != 5)
+
+
+def test_pipe_sink_any_pred_true_multilambda():
+    @Pipe([5, 5, 5, 5, 4, 5]).any(pred=True)
+    def p(x):
+        return x != 5
+    assert p
 
 
 # Pipe.contains
