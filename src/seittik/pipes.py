@@ -34,6 +34,7 @@ from .utils.collections import Seen
 from .utils.compareutils import MAXIMUM, MINIMUM
 from .utils.diceutils import DiceRoll
 from .utils.flatten import flatten
+from .utils.funcutils import multilambda
 from .utils.merge import merge
 from .utils.randutils import SHARED_RANDOM
 from .utils.sentinels import _DROP, _END, _KEEP, _MISSING, _POOL, Sentinel
@@ -438,7 +439,8 @@ class Pipe:
         return cls._with_source(pipe_iterdir)
 
     @classonlymethod
-    def iterfunc(cls, func, initial):
+    @multilambda('func')
+    def iterfunc(cls, initial, func=_MISSING):
         """
         {{pipe_source}} Yield `initial`, then yield the results of successively
         calling `func` on the prior item yielded.
@@ -450,7 +452,7 @@ class Pipe:
 
         In [1]: add1 = lambda x: x + 1
 
-        In [1]: Pipe.iterfunc(add1, 13).take(5).list()
+        In [1]: Pipe.iterfunc(13, add1).take(5).list()
         Out[1]: [13, 14, 15, 16, 17]
         ```
 
@@ -800,7 +802,8 @@ class Pipe:
         return cls._with_source(pipe_roll)
 
     @classonlymethod
-    def unfold(cls, func, seed):
+    @multilambda('func')
+    def unfold(cls, seed, func=_MISSING):
         """
         {{pipe_source}} Yield items created from `func` and an initial `seed`.
 
@@ -814,7 +817,7 @@ class Pipe:
 
         In [1]: build_pow2 = lambda x: (x, x * 2)
 
-        In [1]: Pipe.unfold(build_pow2, 2).take(6).list()
+        In [1]: Pipe.unfold(2, build_pow2).take(6).list()
         Out[1]: [2, 4, 8, 16, 32, 64]
         ```
 
@@ -1481,7 +1484,8 @@ class Pipe:
                 yield tuple(chunk)
         return self._with_step(pipe_chunk)
 
-    def chunkby(self, key):
+    @multilambda('key')
+    def chunkby(self, key=_MISSING):
         """
         {{pipe_step}} Yield tuples of adjacent elements grouped by `key`.
 
@@ -1715,6 +1719,7 @@ class Pipe:
                 yield item
         return self._with_step(pipe_debug)
 
+    @multilambda('key', optional=True)
     def depeat(self, *, key=_MISSING):
         """
         {{pipe_step}} Yield items, but skip consecutive duplicates.
@@ -1816,7 +1821,8 @@ class Pipe:
             return itertools.islice(res, n, None)
         return self._with_step(pipe_drop)
 
-    def dropwhile(self, pred):
+    @multilambda('pred')
+    def dropwhile(self, pred=_MISSING):
         """
         {{pipe_step}} Skip items until `pred(item)` is true, then yield that
         item and all following items without testing them.
@@ -1890,9 +1896,10 @@ class Pipe:
                 c += 1
         return self._with_step(pipe_enumerate_info)
 
-    def filter(self, func=None):
+    @multilambda('pred')
+    def filter(self, pred=None):
         """
-        {{pipe_step}} Yield items for which `func(item)` is true.
+        {{pipe_step}} Yield items for which `pred(item)` is true.
 
         See {external:py:func}`filter`.
 
@@ -1905,7 +1912,7 @@ class Pipe:
         :rtype: {py:class}`Pipe`
         """
         def pipe_filter(res):
-            return builtins.filter(func, res)
+            return builtins.filter(pred, res)
         return self._with_step(pipe_filter)
 
     def flatten(self, levels=_MISSING):
@@ -1999,7 +2006,8 @@ class Pipe:
                 yield cls.zip(keys, item, fillvalue=fillvalue, strict=strict).dict()
         return self._with_step(pipe_label)
 
-    def map(self, func):
+    @multilambda('func')
+    def map(self, func=_MISSING):
         """
         {{pipe_step}} Yield each item mapped through `func`.
 
@@ -2154,9 +2162,10 @@ class Pipe:
             return itertools.chain(items, res)
         return self._with_step(pipe_prepend)
 
-    def reject(self, func=None):
+    @multilambda('pred', optional=True)
+    def reject(self, pred=None):
         """
-        {{pipe_step}} Yield items for which `func(item)` is false.
+        {{pipe_step}} Yield items for which `pred(item)` is false.
 
         See {external:py:func}`itertools.filterfalse`.
 
@@ -2169,7 +2178,7 @@ class Pipe:
         :rtype: {py:class}`Pipe`
         """
         def pipe_reject(res):
-            return itertools.filterfalse(func, res)
+            return itertools.filterfalse(pred, res)
         return self._with_step(pipe_reject)
 
     def remap(self, *args, **kwargs):
@@ -2373,7 +2382,8 @@ class Pipe:
                 yield tuple(func(seq, k=i))
         return self._with_step(pipe_sample)
 
-    def scan(self, func, *, initial=None):
+    @multilambda('func')
+    def scan(self, func=_MISSING, *, initial=None):
         """
         {{pipe_step}} Yield accumulated results of applying binary `func` to the source items.
 
@@ -2426,6 +2436,7 @@ class Pipe:
             return itertools.islice(res, start, stop, step)
         return self._with_step(pipe_slice)
 
+    @multilambda('key', optional=True)
     def sort(self, *, key=None, reverse=False):
         """
         {{pipe_step}} Yield the source items, sorted.
@@ -2575,7 +2586,8 @@ class Pipe:
             yield sink(res)
         return self._with_step(pipe_sponge)
 
-    def starmap(self, func):
+    @multilambda('func')
+    def starmap(self, func=_MISSING):
         """
         {{pipe_step}} For each item, yield `func(*item)`.
 
@@ -2616,7 +2628,8 @@ class Pipe:
             return itertools.islice(res, None, n)
         return self._with_step(pipe_take)
 
-    def takewhile(self, pred):
+    @multilambda('pred')
+    def takewhile(self, pred=_MISSING):
         """
         {{pipe_step}} Yield items until `pred(item)` is false, then skip that
         item and all following items without testing them.
@@ -2635,7 +2648,8 @@ class Pipe:
             return itertools.takewhile(pred, res)
         return self._with_step(pipe_takewhile)
 
-    def tap(self, func):
+    @multilambda('func')
+    def tap(self, func=_MISSING):
         """
         {{pipe_step}} For each item, call `func(item)` as a side effect
         and yield the item unchanged.
@@ -2662,6 +2676,7 @@ class Pipe:
                 yield item
         return self._with_step(pipe_tap)
 
+    @multilambda('key', optional=True)
     def unique(self, /, key=_MISSING):
         """
         {{pipe_step}} Yield only items that have not been yielded already.
@@ -2705,6 +2720,7 @@ class Pipe:
     # Sinks: non-container results
 
     @partialclassmethod
+    @multilambda('pred', optional=True)
     def all(self, pred=_MISSING):
         """
         {{pipe_sink}} Return `True` if `pred(item)` is true for all items.
@@ -2742,6 +2758,7 @@ class Pipe:
         return self._evaluate(sink=pipe_all)
 
     @partialclassmethod
+    @multilambda('pred', optional=True)
     def any(self, pred=_MISSING):
         """
         {{pipe_sink}} Return `True` if `pred(item)` is true for any item.
@@ -2895,7 +2912,8 @@ class Pipe:
         return self._evaluate(sink=pipe_exhaust)
 
     @partialclassmethod
-    def fold(self, func, initial=_MISSING):
+    @multilambda('func', optional=True)
+    def fold(self, func=_MISSING, initial=_MISSING):
         """
         {{pipe_sink}} Apply binary `func` to this pipe, reducing it to a single
         value.
@@ -2939,7 +2957,8 @@ class Pipe:
         return self._evaluate(sink=pipe_frequencies)
 
     @partialclassmethod
-    def groupby(self, key):
+    @multilambda('key')
+    def groupby(self, key=_MISSING):
         """
         {{pipe_sink}} Return a {external:py:class}`dict` grouping
         together elements under the same `key` function result.
@@ -3004,6 +3023,7 @@ class Pipe:
         return self._evaluate(sink=pipe_identical)
 
     @partialclassmethod
+    @multilambda('key', optional=True)
     def max(self, *, default=_MISSING, key=None):
         """
         {{pipe_sink}} Return the maximum value for this pipe.
@@ -3151,6 +3171,7 @@ class Pipe:
         return self._evaluate(sink=pipe_merge)
 
     @partialclassmethod
+    @multilambda('key', optional=True)
     def min(self, *, default=_MISSING, key=None):
         """
         {{pipe_sink}} Return the minimum value for this pipe.
@@ -3180,6 +3201,7 @@ class Pipe:
         return self._evaluate(sink=pipe_min)
 
     @partialclassmethod
+    @multilambda('key', optional=True)
     def minmax(self, *, default=_MISSING, key=None):
         """
         {{pipe_sink}} Return a tuple of `(min_value, max_value)` for this pipe.
@@ -3252,6 +3274,7 @@ class Pipe:
         return self._evaluate(sink=pipe_mode)
 
     @partialclassmethod
+    @multilambda('pred', optional=True)
     def none(self, pred=_MISSING):
         """
         {{pipe_sink}} Return `True` if `pred(item)` is false for all items.
@@ -3350,6 +3373,7 @@ class Pipe:
         return self._evaluate(sink=pipe_struct_pack)
 
     @partialclassmethod
+    @multilambda('func', optional=True)
     def partition(self, func=None):
         """
         {{pipe_sink}} Return a pair of tuples: `(true_items, false_items)`
@@ -3494,6 +3518,7 @@ class Pipe:
         return self._evaluate(sink=pipe_variance)
 
     @partialclassmethod
+    @multilambda('key', optional=True)
     def width(self, *, default=_MISSING, key=None):
         """
         {{pipe_sink}} Return the difference between the maximum and minimum
