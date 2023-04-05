@@ -3617,6 +3617,41 @@ class Pipe:
         return self._evaluate(sink=pipe_dict)
 
     @partialclassmethod
+    def iter(self):
+        """
+        {{pipe_sink}} Return an {external:py:class}`Iterator
+        <collections.abc.Iterator>` of the pipe's items.
+
+        ```{ipython}
+        :okexcept:
+
+        In [1]: ix = Pipe(['a', 'b', 'c', 'd', 'e']).iter()
+
+        In [1]: next(ix)
+        Out[1]: 'a'
+
+        In [1]: next(ix)
+        Out[1]: 'b'
+
+        In [1]: next(ix)
+        Out[1]: 'c'
+
+        In [1]: next(ix)
+        Out[1]: 'd'
+
+        In [1]: next(ix)
+        Out[1]: 'e'
+
+        In [1]: next(ix)
+        ```
+
+        :rtype: {external:py:class}`collections.abc.Iterator`
+        """
+        def pipe_iter(res):
+            return builtins.iter(res)
+        return self._evaluate(sink=pipe_iter)
+
+    @partialclassmethod
     def list(self):
         """
         {{pipe_sink}} Return a {external:py:class}`list` of the pipe's items.
