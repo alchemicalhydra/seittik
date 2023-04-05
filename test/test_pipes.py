@@ -1439,6 +1439,29 @@ def test_pipe_sink_exhaust():
         next(iter(p))
 
 
+# Pipe.find
+
+def test_pipe_sink_find_int():
+    p = Pipe([1, 2, 3, 4, 5])
+    assert p.find(lambda x: x % 2 == 0) == 2
+
+
+def test_pipe_sink_find_str():
+    p = Pipe('abCdEf')
+    assert p.find(str.isupper) == 'C'
+
+
+def test_pipe_sink_find_str_default():
+    p = Pipe('abcdef')
+    assert p.find(str.isupper, default='x') == 'x'
+
+
+def test_pipe_sink_find_str_missing():
+    p = Pipe('abcdef')
+    with pytest.raises(ValueError, match='No matching item found'):
+        p.find(str.isupper)
+
+
 # Pipe.fold
 
 def test_pipe_sink_fold_without_initial():

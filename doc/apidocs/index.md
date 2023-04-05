@@ -204,6 +204,13 @@ seittik.pipes.Pipe.groupby
 seittik.pipes.Pipe.partition
 ```
 
+### Sinks: Locating
+
+```{autodoc2-summary}
+seittik.pipes.Pipe.find
+seittik.pipes.Pipe.nth
+```
+
 ### Sinks: Miscellaneous
 
 ```{autodoc2-summary}
@@ -211,7 +218,6 @@ seittik.pipes.Pipe.count
 seittik.pipes.Pipe.exhaust
 seittik.pipes.Pipe.fold
 seittik.pipes.Pipe.merge
-seittik.pipes.Pipe.nth
 seittik.pipes.Pipe.struct_pack
 ```
 
