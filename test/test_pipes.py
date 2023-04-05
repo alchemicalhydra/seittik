@@ -978,6 +978,13 @@ def test_pipe_step_prepend_2():
     assert list(p) == ['d', 'e', 'a', 'b', 'c']
 
 
+# Pipe.randitem
+
+def test_pipe_step_randitem(random_seed_0):
+    p= Pipe('abc').randitem().take(5)
+    assert list(p) == ['b', 'b', 'a', 'b', 'c']
+
+
 # Pipe.reject
 
 def test_pipe_step_reject():
