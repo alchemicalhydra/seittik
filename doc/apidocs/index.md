@@ -160,6 +160,7 @@ seittik.pipes.Pipe.array
 seittik.pipes.Pipe.bytes
 seittik.pipes.Pipe.deque
 seittik.pipes.Pipe.dict
+seittik.pipes.Pipe.iter
 seittik.pipes.Pipe.list
 seittik.pipes.Pipe.set
 seittik.pipes.Pipe.str

@@ -1265,6 +1265,19 @@ def test_pipe_sink_dict():
     assert p.dict() == {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5}
 
 
+# Pipe.iter
+
+def test_pipe_sink_iter():
+    ix = Pipe([1, 2, 3, 4, 5]).iter()
+    assert next(ix) == 1
+    assert next(ix) == 2
+    assert next(ix) == 3
+    assert next(ix) == 4
+    assert next(ix) == 5
+    with pytest.raises(StopIteration):
+        next(ix)
+
+
 # Pipe.list
 
 def test_pipe_sink_list():
