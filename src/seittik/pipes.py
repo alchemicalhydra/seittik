@@ -2162,6 +2162,31 @@ class Pipe:
             return itertools.chain(items, res)
         return self._with_step(pipe_prepend)
 
+    def randitem(self):
+        """
+        {{pipe_step}} Yield randomly chosen items from the source.
+
+        The source must be finite, and it will be cached and exhausted upon
+        evaluation.
+
+        See {external:py:func}`random.choice`.
+
+        ```{ipython}
+
+        @suppress
+        In [1]: import random; random.seed(0)
+
+        In [1]: Pipe('abc').randitem().take(5).list()
+        Out[1]: ['b', 'b', 'a', 'b', 'c']
+        ```
+
+        :rtype: {py:class}`Pipe`
+        """
+        def pipe_randitem(seq, rng):
+            while True:
+                yield rng.choice(seq)
+        return self._with_step(pipe_randitem)
+
     @multilambda('pred', optional=True)
     def reject(self, pred=None):
         """

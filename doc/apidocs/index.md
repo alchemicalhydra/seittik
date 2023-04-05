@@ -129,6 +129,7 @@ seittik.pipes.Pipe.permutations
 ### Steps: Randomness/Statistics
 
 ```{autodoc2-summary}
+seittik.pipes.Pipe.randitem
 seittik.pipes.Pipe.sample
 ```
 
