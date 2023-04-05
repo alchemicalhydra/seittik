@@ -2936,6 +2936,42 @@ class Pipe:
             collections.deque(res, maxlen=0)
         return self._evaluate(sink=pipe_exhaust)
 
+    @multilambda('pred')
+    def find(self, pred=_MISSING, *, default=_MISSING):
+        """
+        {{pipe_sink}} Return the first item for which `pred(item)` is true.
+
+        If no matching item is found, return `default` if it is provided,
+        otherwise raise {py:exc}`ValueError`.
+
+        ```{ipython}
+
+        In [1]: Pipe([1, 2, 3, 4, 5]).find(lambda x: x % 2 == 0)
+        Out[1]: 2
+
+        In [1]: Pipe('abCdEf').find(str.isupper)
+        Out[1]: 'C'
+
+        In [1]: Pipe('abcdef').find(str.isupper, default='x')
+        Out[1]: 'x'
+        ```
+
+        :rtype: {py:class}`Pipe`
+        """
+        match default:
+            case _ if default is not _MISSING:
+                def pipe_find(res):
+                    ix = builtins.filter(pred, res)
+                    return next(ix, default)
+            case _:
+                def pipe_find(res):
+                    ix = builtins.filter(pred, res)
+                    try:
+                        return next(ix)
+                    except StopIteration as exc:
+                        raise ValueError("No matching item found") from exc
+        return self._evaluate(sink=pipe_find)
+
     @partialclassmethod
     @multilambda('func', optional=True)
     def fold(self, func=_MISSING, initial=_MISSING):
