@@ -88,7 +88,7 @@ ipython = ">=8.12.0"
 # Tasks
 poethepoet = ">=0.19.0"
 # Tests
-coverage = ">=7.2.2"
+coverage = ">=7.2.3"
 hypothesis = ">=6.70.2"
 nox = ">=2022.11.21"
 pyfakefs = ">=5.2.0"
