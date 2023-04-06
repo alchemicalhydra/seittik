@@ -12,10 +12,10 @@
     "@babel/register": "^7.21.0",
     "babel-loader": "^9.1.2",
     "terser-webpack-plugin": "^5.3.7",
-    "webpack": "^5.77.0"
+    "webpack": "^5.78.0"
   },
   "dependencies": {
     "cash-dom": "^8.1.4",
-    "mermaid": "^10.0.2"
+    "mermaid": "^10.1.0"
   }
 }
