@@ -74,6 +74,13 @@ html_context = {
 ########################################################################
 # xlinks
 
+def _fix_erl(format_url, format_caption):
+    def _cb_url(v):
+        repl = re.sub(r'/', '-', v)
+        return format_url.format(v=repl)
+    return (_cb_url, format_caption)
+
+
 def _fix_kt(format_url, format_caption):
     def _cb_url(v):
         repl = re.sub(r'[A-Z]', lambda m: f"-{m[0].lower()}", v)
@@ -98,6 +105,7 @@ def _fix_rb(format_url, format_caption):
 xlinks = {
     'clj-core': ('https://clojure.github.io/clojure/clojure.core-api.html#clojure.core/{v}', "Clojure core: {v}"),
     'clj-medley': ('http://weavejester.github.io/medley/medley.core.html#var-{v}', "Clojure Medley: {v}"),
+    'erl-lists': _fix_erl('https://www.erlang.org/doc/man/lists.html#{v}', "Erlang lists: {v}"),
     'hs-data-list': ('https://hackage.haskell.org/package/base/docs/Data-List.html#v:{v}', "Haskell Data.List: {v}"),
     'js-fxts': ('https://fxts.dev/docs/{v}', "JavaScript: FxTS: {v}"),
     'js-lfi': ('https://github.com/TomerAberbach/lfi/blob/main/docs/modules.md#{v}', "JavaScript: lfi: {v}"),
