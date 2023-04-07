@@ -304,6 +304,7 @@ Python concept of iteration in general.
 
 #### {py:meth}`.randfloat() <seittik.pipes.Pipe.randfloat>`
 
+- {clj-core}`rand`
 - {py-random}`random`
 - {py-random}`uniform`
 
@@ -312,6 +313,7 @@ Acts like {external:py:func}`random.random` without arguments, and
 
 #### {py:meth}`.randrange() <seittik.pipes.Pipe.randrange>`
 
+- {clj-core}`rand-int`
 - {py-random}`randint`
 - {py-random}`randrange`
 
@@ -320,6 +322,8 @@ Like {py:meth}`Pipe.range`, this is *inclusive* of the upper bound.
 #### {py:meth}`.range() <seittik.pipes.Pipe.range>` / {py:meth}`.rangetil() <seittik.pipes.Pipe.rangetil>`
 
 - {clj-core}`range`
+- {erl-lists}`seq/2`
+- {erl-lists}`seq/3`
 - {js-fxts}`range`
 - {py-builtins}`func-range`
 - {py-itertools}`count`
@@ -336,6 +340,7 @@ number I actually care about.
 
 #### {py:meth}`.repeat() <seittik.pipes.Pipe.repeat>`
 
+- {erl-lists}`duplicate/2`
 - {js-fxts}`repeat`
 - {hs-data-list}`repeat`
 - {hs-data-list}`replicate`
@@ -395,6 +400,7 @@ multiplication.
 
 - {clj-core}`concat`
 - {clj-medley}`join`
+- {erl-lists}`append/1`
 - {hs-data-list}`concat`
 - {js-ramda}`unnest`
 - {kt-collections}`flatten`
@@ -420,6 +426,8 @@ For a more powerful variant, see {py:meth}`Pipe.flatten`.
 
 #### {py:meth}`.zip() <seittik.pipes.Pipe.zip>`
 
+- {erl-lists}`zip/2`
+- {erl-lists}`zip3/3`
 - {hs-data-list}`unzip`
 - {hs-data-list}`zip`
 - {js-fxts}`zip`
@@ -519,6 +527,7 @@ I saw no reason to keep these as separate functions.
 
 #### {py:meth}`.concat() <seittik.pipes.Pipe.concat>`
 
+- {erl-lists}`append/2`
 - {js-ramda}`concat`
 - {py-collections}`deque.extend`
 - {py-itertools}`chain`
@@ -569,6 +578,7 @@ labeled.
 #### {py:meth}`.dropwhile() <seittik.pipes.Pipe.dropwhile>`
 
 - {clj-core}`drop-while`
+- {erl-lists}`dropwhile/2`
 - {hs-data-list}`dropWhile`
 - {js-fxts}`dropWhile`
 - {js-lfi}`dropWhile`
@@ -579,6 +589,8 @@ labeled.
 #### {py:meth}`.enumerate() <seittik.pipes.Pipe.enumerate>`
 
 - {clj-medley}`indexed`
+- {erl-lists}`enumerate/1`
+- {erl-lists}`enumerate/2`
 - {js-fxts}`zipWithIndex`
 - {py-builtins}`enumerate`
 - {rb-enumerable}`each_with_index`
@@ -593,6 +605,7 @@ if we're dealing with the first and/or last item.
 #### {py:meth}`.filter() <seittik.pipes.Pipe.filter>`
 
 - {clj-core}`filter`
+- {erl-lists}`filter/2`
 - {hs-data-list}`filter`
 - {js-fxts}`filter`
 - {js-lfi}`filter`
@@ -604,6 +617,7 @@ if we're dealing with the first and/or last item.
 #### {py:meth}`.flatten() <seittik.pipes.Pipe.flatten>`
 
 - {clj-core}`flatten`
+- {erl-lists}`flatten/1`
 - {js-fxts}`flat`
 - {js-ramda}`flatten`
 - {py-more-itertools}`collapse`
@@ -615,6 +629,7 @@ flatten either all levels of nesting, or a specified number.
 #### {py:meth}`.intersperse() <seittik.pipes.Pipe.intersperse>`
 
 - {clj-core}`interpose`
+- {erl-lists}`join/2`
 - {hs-data-list}`intersperse`
 - {js-ramda}`intersperse`
 - {py-more-itertools}`intersperse`
@@ -627,6 +642,7 @@ Sequence goes in, labeled `dict` comes out.
 #### {py:meth}`.map() <seittik.pipes.Pipe.map>`
 
 - {clj-core}`map`
+- {erl-lists}`map/2`
 - {hs-data-list}`map`
 - {js-fxts}`map`
 - {js-ramda}`map`
@@ -658,6 +674,11 @@ internally.
 - {py-collections}`deque.appendleft`
 - {py-toolz}`itertoolz.cons`
 
+#### {py:meth}`.randitem() <seittik.pipes.Pipe.randitem>`
+
+- {clj-core}`rand-nth`
+- {py-random}`choice`
+
 #### {py:meth}`.reject() <seittik.pipes.Pipe.reject>`
 
 - {clj-core}`remove`
@@ -687,6 +708,7 @@ key-value pairs, transforming values, and inserting new values.
 #### {py:meth}`.reverse() <seittik.pipes.Pipe.reverse>`
 
 - {clj-core}`reverse`
+- {erl-lists}`reverse/1`
 - {hs-data-list}`reverse`
 - {js-fxts}`reverse`
 - {kt-collections}`reversed`
@@ -697,6 +719,7 @@ I prefer verb names over adjectives.
 
 #### {py:meth}`.sample() <seittik.pipes.Pipe.sample>`
 
+- {clj-core}`shuffle`
 - {py-more-itertools}`random_permutation`
 - {py-random}`choices`
 - {py-random}`sample`
@@ -725,6 +748,8 @@ actually the same thing.
 #### {py:meth}`.slice() <seittik.pipes.Pipe.slice>`
 
 - {clj-core}`take-nth` (using `step`)
+- {erl-lists}`sublist/2`
+- {erl-lists}`sublist/3`
 - {js-fxts}`slice`
 - {js-ramda}`slice`
 - {kt-collections}`slice`
@@ -735,6 +760,8 @@ actually the same thing.
 
 - {clj-core}`sort`
 - {clj-core}`sort-by`
+- {erl-lists}`sort/1`
+- {erl-lists}`sort/2`
 - {hs-data-list}`sort`
 - {hs-data-list}`sortOn`
 - {js-fxts}`sort`
@@ -754,6 +781,8 @@ I prefer verb names over adjectives.
 #### {py:meth}`.split() <seittik.pipes.Pipe.split>`
 
 - {clj-core}`split-at`
+- {erl-lists}`split/2`
+- {hs-data-list}`splitAt`
 - {js-ramda}`splitAt`
 - {py-more-itertools}`split_before`
 
@@ -782,6 +811,7 @@ a new item within the Pipe.
 #### {py:meth}`.takewhile() <seittik.pipes.Pipe.takewhile>`
 
 - {clj-core}`take-while`
+- {erl-lists}`takewhile/2`
 - {hs-data-list}`takeWhile`
 - {js-fxts}`takeWhile`
 - {js-lfi}`takeWhile`
@@ -793,6 +823,7 @@ a new item within the Pipe.
 #### {py:meth}`.tap() <seittik.pipes.Pipe.tap>`
 
 - {clj-core}`for`
+- {erl-lists}`foreach/2`
 - {js-fxts}`each`
 - {js-fxts}`peek`
 - {js-fxts}`tap`
@@ -804,6 +835,8 @@ a new item within the Pipe.
 
 - {clj-core}`distinct`
 - {clj-medley}`distinct-by`
+- {erl-lists}`uniq/1`
+- {erl-lists}`uniq/2`
 - {hs-data-list}`nub`
 - {hs-data-list}`nubBy`
 - {js-fxts}`uniq`
@@ -841,6 +874,10 @@ container.
 
 - {py-builtins}`func-dict`
 
+#### {py:meth}`.iter() <seittik.pipes.Pipe.iter>`
+
+- {py-builtins}`iter`
+
 #### {py:meth}`.list() <seittik.pipes.Pipe.list>`
 
 - {py-builtins}`func-list`
@@ -866,7 +903,9 @@ These are all other terminal transformations of a pipe.
 #### {py:meth}`.all() <seittik.pipes.Pipe.all>`
 
 - {clj-core}`every?`
-- {hs-data-list}`all`
+- {erl-lists}`all/2`
+- {hs-data-list}`and` (without a predicate)
+- {hs-data-list}`all` (with a predicate)
 - {js-fxts}`every`
 - {js-ramda}`all`
 - {kt-collections}`all`
@@ -875,7 +914,9 @@ These are all other terminal transformations of a pipe.
 
 #### {py:meth}`.any() <seittik.pipes.Pipe.any>`
 
-- {hs-data-list}`any`
+- {erl-lists}`any/2`
+- {hs-data-list}`any` (with a predicate)
+- {hs-data-list}`or` (without a predicate)
 - {js-fxts}`some`
 - {js-ramda}`any`
 - {kt-collections}`any`
@@ -885,6 +926,7 @@ These are all other terminal transformations of a pipe.
 #### {py:meth}`.contains() <seittik.pipes.Pipe.contains>`
 
 - {clj-core}`contains?` (not quite?)
+- {erl-lists}`member/2`
 - {hs-data-list}`elem`
 - {kt-collections}`contains`
 - {rb-enumerable}`member?`
@@ -916,9 +958,15 @@ effectively counting items "as they go by".
 This performs a full exhaustion of the source, and has no options to
 partially consume it; use {py:meth}`Pipe.drop` for that.
 
+#### {py:meth}`.find() <seittik.pipes.Pipe.find>`
+
+- {hs-data-list}`find`
+- {js-ramda}`find`
+
 #### {py:meth}`.fold() <seittik.pipes.Pipe.fold>`
 
 - {clj-core}`reduce`
+- {erl-lists}`foldl/3`
 - {hs-data-list}`foldl`
 - {hs-data-list}`foldl1`
 - {js-fxts}`reduce`
@@ -960,6 +1008,7 @@ For behavior that only groups adjacent elements, see
 
 - {clj-medley}`greatest`
 - {clj-medley}`greatest-by`
+- {erl-lists}`max/1`
 - {hs-data-list}`maximum`
 - {hs-data-list}`maximumBy`
 - {js-fxts}`max`
@@ -998,6 +1047,7 @@ For behavior that only groups adjacent elements, see
 
 - {clj-medley}`least`
 - {clj-medley}`least-by`
+- {erl-lists}`min/1`
 - {hs-data-list}`minimum`
 - {hs-data-list}`minimumBy`
 - {js-fxts}`min`
@@ -1034,6 +1084,7 @@ For behavior that only groups adjacent elements, see
 #### {py:meth}`.nth() <seittik.pipes.Pipe.nth>`
 
 - {clj-core}`nth`
+- {erl-lists}`nth/2`
 - {js-fxts}`nth`
 - {js-ramda}`nth`
 - {kt-collections}`elementAt`
@@ -1048,6 +1099,7 @@ For behavior that only groups adjacent elements, see
 
 #### {py:meth}`.partition() <seittik.pipes.Pipe.partition>`
 
+- {erl-lists}`partition/2`
 - {hs-data-list}`partition`
 - {js-fxts}`partition`
 - {js-ramda}`partition`
@@ -1084,6 +1136,7 @@ single method via a flag, with population being the default.
 
 #### {py:meth}`.sum() <seittik.pipes.Pipe.sum>`
 
+- {erl-lists}`sum/1`
 - {hs-data-list}`sum`
 - {js-fxts}`sum`
 - {kt-collections}`sum`
