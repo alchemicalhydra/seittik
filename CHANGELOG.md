@@ -3,6 +3,27 @@
 For full details, see the [commit
 history](https://github.com/alchemicalhydra/seittik/commits/master).
 
+## 2023.04 (2023-04-06)
+
+- **Breaking change:** Multilambda support was added to pipes, enabling
+  quasi-anonymous multi-expression "lambdas". This required the
+  signatures for `Pipe.iterfunc` and `Pipe.unfold` to have their
+  arguments swapped. See the design notes for details.
+- Add `Pipe.randitem` step
+- Add `Pipe.find` sink
+- Add `Pipe.iter` sink
+- `Pipe` stage method docstrings were greatly fleshed out, with at least
+  one IPython directive block example for nearly every stage
+- Fix a typo in the docstring for `Pipe.clamp`
+- Switch to Sphinx DirectoryHTMLBuilder for cleaner doc URLs
+- Add a 404 page to the docs
+- IPython directive blocks now highlight output as Python, instead of
+  generically
+- IPython directive block output styles were tweaked
+- Parameter blocks in docstrings no longer output spurious `None` values
+- Design notes were further fleshed out
+- Development dependencies were updated
+
 ## 2023.03.5 (2023-03-30)
 
 - A first draft of a User Guide was added to the docs
