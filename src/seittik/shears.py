@@ -406,8 +406,8 @@ class ShearOp(ShearBase):
         if arg_leftover:
             arg_total = len(ret) + len(arg_leftover)
             raise TypeError(
-                    f"{self!r}() takes {len(names)} positional argument{'' if len(names) == 1 else 's'}"
-                    f" but {arg_total} {'was' if arg_total == 1 else 'were'} given"
+                f"{self!r}() takes {len(names)} positional argument{'' if len(names) == 1 else 's'}"
+                f" but {arg_total} {'was' if arg_total == 1 else 'were'} given"
             )
         return ret
 
@@ -465,8 +465,8 @@ class ShearBinOp(ShearOp):
     def __init__(self, op, op_str, left, right, repr_call=False):
         if not isinstance(left, ShearBase) and not isinstance(right, ShearBase):
             raise TypeError(
-                    f"At least one of {self.__class__.__name__} arguments"
-                    " 'left' or 'right' must be an instance of ShearBase"
+                f"At least one of {self.__class__.__name__} arguments"
+                " 'left' or 'right' must be an instance of ShearBase"
             )
         self.op = op
         self.op_name = op.__name__
