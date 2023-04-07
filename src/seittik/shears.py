@@ -445,7 +445,7 @@ class ShearUnOp(ShearOp):
                 ret = self.param(**processed_args)
             case ShearVar():
                 ret = processed_args[self.param.name]
-            case _: # pragma: no cover
+            case _:  # pragma: no cover
                 # This should be unreachable if we were constructed
                 # correctly and `param` was never modified
                 raise TypeError("ShearUnOp attribute 'param' is not an instance of ShearBase")
