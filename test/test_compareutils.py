@@ -1,6 +1,5 @@
-import pytest
-
 from seittik.utils.compareutils import Maximum, Minimum
+
 
 def test_minimum_vs_maximum():
     minimum = Minimum()

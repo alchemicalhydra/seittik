@@ -69,6 +69,6 @@ def test_seen_bool():
     s = Seen()
     for x in (1, 2, 1, 2, 3):
         x in s
-    assert bool(s) == True
+    assert bool(s)
     s.clear()
-    assert bool(s) == False
+    assert not bool(s)

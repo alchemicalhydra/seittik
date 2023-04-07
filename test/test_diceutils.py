@@ -29,6 +29,7 @@ def test_parse_dice_str():
     assert parse_dice_str('1d4-1') == (1, 4, -1)
     assert parse_dice_str('2d12+4') == (2, 12, 4)
 
+
 def test_parse_dice_str_fail():
     with pytest.raises(ValueError):
         parse_dice_str('meow')
@@ -66,11 +67,11 @@ def test_diceroll_init_args_triple_ints():
 
 def test_diceroll_init_args_bad():
     with pytest.raises(TypeError):
-        dr = DiceRoll(3, 6, 8, 3)
+        DiceRoll(3, 6, 8, 3)
     with pytest.raises(TypeError):
-        dr = DiceRoll(None)
+        DiceRoll(None)
     with pytest.raises(TypeError):
-        dr = DiceRoll()
+        DiceRoll()
 
 
 def test_diceroll_repr():

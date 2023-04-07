@@ -1,5 +1,3 @@
-import pytest
-
 from seittik.utils.flatten import flatten
 
 

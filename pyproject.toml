@@ -14,6 +14,9 @@ source = ["src"]
 
 [tool.flake8]
 ignore = [
+  # "continuation line with same indent as next logical line"
+  # results in incredibly ugly closings for multi-line function parameters
+  'E125',
   # "expected 1 blank line before a nested definition"
   'E306',
   # "redefinition of unused"
@@ -23,7 +26,6 @@ ignore = [
   'E24',
   'E121',
   'E123',
-  'E126',
   'E226',
   'E704',
   'W503',
@@ -53,7 +55,7 @@ doc.help = "Build documentation"
 doclive.cmd = './python_packages/bin/sphinx-autobuild -a -d doc/.doctrees -E -b dirhtml --watch src/seittik --watch CHANGELOG.md --watch LICENSE.md doc doc/_build/html'
 doclive.help = "Build documentation with live autoreload"
 # flake8
-flake8.cmd = './python_packages/bin/flake8 src/seittik'
+flake8.cmd = './python_packages/bin/flake8 src/seittik test'
 flake8.help = "Run flake8"
 # nox:
 nox.cmd = './python_packages/bin/nox'

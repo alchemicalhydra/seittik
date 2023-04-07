@@ -12,9 +12,8 @@ from seittik.utils.sentinels import _MISSING
 # replace
 
 def test_replace_missing_values():
-    x = 1
     with pytest.raises(TypeError):
-        x = replace(_MISSING, 2)
+        replace(_MISSING, 2)
 
 
 def test_replace_one():
@@ -50,7 +49,7 @@ def test_check_int_or_none_pass():
     x = 5
     assert check_int_or_none('x', x) is None
     y = None
-    assert check_int_or_none('x', None) is None
+    assert check_int_or_none('x', y) is None
 
 
 def test_check_int_or_none_fail():
