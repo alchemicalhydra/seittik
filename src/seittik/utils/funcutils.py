@@ -7,6 +7,9 @@ from .sentinels import _MISSING
 __all__ = ()
 
 
+_MULTILAMBDA_PARAM_KINDS = {inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY}
+
+
 def attach(**kwargs):
     """
     Decorate a function with `func.key = value` for each key-value pair in
@@ -37,7 +40,7 @@ def multilambda(param, optional=_MISSING):
             if k != param:
                 continue
             default = p.default if optional is _MISSING else optional
-            if p.kind not in {inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY} or default is inspect._empty:
+            if p.kind not in _MULTILAMBDA_PARAM_KINDS or default is inspect._empty:
                 raise TypeError(f"param {param!r} must be a keyword parameter with a default")
             break
         else:
