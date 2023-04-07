@@ -12,6 +12,26 @@ show_missing = true
 [tool.coverage.run]
 source = ["src"]
 
+[tool.flake8]
+ignore = [
+  # "expected 1 blank line before a nested definition"
+  'E306',
+  # "redefinition of unused"
+  # too many false positives, particularly within match blocks
+  'F811',
+  # defaults
+  'E24',
+  'E121',
+  'E123',
+  'E126',
+  'E226',
+  'E704',
+  'W503',
+  'W504',
+]
+max-line-length = 120
+show-source = true
+
 [tool.isort]
 balanced_wrapping = true
 combine_as_imports = true
@@ -32,6 +52,9 @@ doc.cmd = './python_packages/bin/sphinx-build -a -E -d doc/.doctrees -b dirhtml 
 doc.help = "Build documentation"
 doclive.cmd = './python_packages/bin/sphinx-autobuild -a -d doc/.doctrees -E -b dirhtml --watch src/seittik --watch CHANGELOG.md --watch LICENSE.md doc doc/_build/html'
 doclive.help = "Build documentation with live autoreload"
+# flake8
+flake8.cmd = './python_packages/bin/flake8 src/seittik'
+flake8.help = "Run flake8"
 # nox:
 nox.cmd = './python_packages/bin/nox'
 nox.help = "Run nox"
@@ -96,6 +119,9 @@ pytest = ">=7.2.2"
 pytest-cov = ">=4.0.0"
 pytest-isort = ">=3.1.0"
 pytest-xdist = ">=3.2.1"
+# Linting
+flake8 = ">=6.0.0"
+flake8-pyproject = ">=1.2.3"
 # Docs
 myst-parser = ">=1.0.0"
 pydata-sphinx-theme = ">=0.13.3"
@@ -107,59 +133,6 @@ sphinxcontrib-mermaid = ">=0.8.1"
 # Necessary to avoid `sphinx-autobuild` needlessly chewing up CPU; its
 # dependency `livereload` has this as a silent optional dependency of its own.
 pyinotify = ">=0.9.6"
-
-[tool.pylint.basic]
-argument-rgx = "[a-zA-Z][a-zA-Z0-9_]*"
-attr-rgx = "[a-z_][a-z0-9_]*"
-class-attribute-rgx = "[a-z_][a-z0-9_]*"
-class-naming-style = "any"
-method-rgx = "[a-z_][a-z0-9_]*"
-variable-rgx = "[a-z_][a-z0-9_]*"
-
-[tool.pylint.format]
-max-line-length = 120
-
-[tool.pylint."messages control"]
-disable = [
-  # Acts stupid with the descriptor protocol
-  'unnecessary-dunder-call',
-
-  # False positives in pattern matching
-  'function-redefined',
-
-  # False positives for positional-only parameters (i.e., before `/`) with
-  # default values
-  'keyword-arg-before-vararg',
-
-  # False positives in try/except/else
-  'no-else-return',
-
-  # False positives
-  'arguments-differ',
-  'no-member',
-  'no-self-argument',
-  'not-an-iterable',
-  'not-callable',
-  'similarities',
-  'stop-iteration-return',
-  'unpacking-non-sequence',
-
-  # Unhelpful
-  'missing-class-docstring',
-  'missing-function-docstring',
-  'missing-module-docstring',
-  'protected-access',
-  'too-few-public-methods',
-  'too-many-arguments',
-  'too-many-branches',
-  'too-many-locals',
-  'too-many-lines',
-  'too-many-nested-blocks',
-  'too-many-public-methods',
-]
-
-[tool.pylint.reports]
-score = false
 
 [tool.pytest.ini_options]
 addopts = [
