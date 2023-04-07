@@ -2543,7 +2543,6 @@ class Pipe:
         """
         def pipe_split(res):
             target = []
-            last = None
             match index:
                 case _ if index is _MISSING:
                     split_indexes = set()
