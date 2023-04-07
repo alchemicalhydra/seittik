@@ -827,7 +827,10 @@ def _bin_spec_params(test_len):
             if len(test_spec) != tl:
                 continue
             if commutative:
-                yield from ((op_spec, *(map(wrapper, test_perm) if wrapper else test_perm), test_spec[-1]) for test_perm in itertools.permutations(test_spec[:-1], test_len))
+                yield from (
+                    (op_spec, *(map(wrapper, test_perm) if wrapper else test_perm), test_spec[-1])
+                    for test_perm in itertools.permutations(test_spec[:-1], test_len)
+                )
             else:
                 yield (op_spec, *(map(wrapper, test_spec[:-1]) if wrapper else test_spec[:-1]), test_spec[-1])
 
@@ -918,13 +921,12 @@ def test_shearunop_param_not_shearbase():
 def test_shearunop_identity(a):
     res = X(a)
     assert res == a
-    assert res is a 
+    assert res is a
 
 
 @pytest.mark.parametrize('spec,a,x', _un_spec_params())
 def test_shearunop_fwd(spec, a, x):
     name = spec['name']
-    op = spec['op']
     symbol = spec['symbol']
     magic = spec.get('magic', True)
     eval_str = f"{symbol}(X)"
@@ -943,7 +945,9 @@ def test_shearbinop_repr():
 def test_shearbinop_param_not_shearbase():
     with pytest.raises(TypeError) as excinfo:
         ShearBinOp(operator.neg, '-', 3, 4)
-    assert str(excinfo.value) == "At least one of ShearBinOp arguments 'left' or 'right' must be an instance of ShearBase"
+    assert str(excinfo.value) == (
+        "At least one of ShearBinOp arguments 'left' or 'right' must be an instance of ShearBase"
+    )
 
 
 def test_shearbinop_nested():
@@ -963,7 +967,6 @@ def test_shearbinop_nested_str():
 @pytest.mark.parametrize('spec,a,b,x', _bin_spec_params(2))
 def test_shearbinop_fwd(spec, a, b, x):
     name = spec['name']
-    op = spec['op']
     symbol = spec['symbol']
     eval_str = f"{symbol}(X, {b})" if _RE_FUNC.search(symbol) else f"X {symbol} ({b})"
     for func in [eval(eval_str), getattr(X, name)(b)]:
@@ -973,7 +976,6 @@ def test_shearbinop_fwd(spec, a, b, x):
 @pytest.mark.parametrize('spec,a,b,x', _bin_spec_params(2))
 def test_shearbinop_rev(spec, a, b, x):
     name = spec['name']
-    op = spec['op']
     symbol = spec['symbol']
     if not spec.get('mirror', True):
         return
@@ -985,7 +987,6 @@ def test_shearbinop_rev(spec, a, b, x):
 @pytest.mark.parametrize('spec,a,x', _bin_spec_params(1))
 def test_shearbinop_same(spec, a, x):
     name = spec['name']
-    op = spec['op']
     symbol = spec['symbol']
     guard = spec.get('guard', lambda a, b: True)
     if not guard(a, a):
@@ -998,7 +999,6 @@ def test_shearbinop_same(spec, a, x):
 @pytest.mark.parametrize('spec,a,b,x', _bin_spec_params(2))
 def test_shearbinop_diff(spec, a, b, x):
     name = spec['name']
-    op = spec['op']
     symbol = spec['symbol']
     eval_str = f"{symbol}(X, Y)" if _RE_FUNC.search(symbol) else f"X {symbol} Y"
     for func in [eval(eval_str), getattr(X, name)(Y)]:
@@ -1009,7 +1009,6 @@ def test_shearbinop_diff(spec, a, b, x):
 @pytest.mark.parametrize('spec,a,x', _bin_spec_params(1))
 def test_shearbinop_same_op_fwd(spec, a, x):
     name = spec['name']
-    op = spec['op']
     symbol = spec['symbol']
     ident = spec.get('identity', None)
     # FIXME
@@ -1020,7 +1019,11 @@ def test_shearbinop_same_op_fwd(spec, a, x):
         return
     if spec.get('wrapper', False):
         return
-    expected_str = f"{symbol}({symbol}({a}, {a}), {ident})" if _RE_FUNC.search(symbol) else f"(({a}) {symbol} ({a})) {symbol} ({ident})"
+    expected_str = (
+        f"{symbol}({symbol}({a}, {a}), {ident})"
+        if _RE_FUNC.search(symbol)
+        else f"(({a}) {symbol} ({a})) {symbol} ({ident})"
+    )
     expected = eval(expected_str)
     eval_str = f"{symbol}({symbol}(X, X), {ident})" if _RE_FUNC.search(symbol) else f"(X {symbol} X) {symbol} ({ident})"
     for func in [eval(eval_str), getattr(getattr(X, name)(X), name)(ident)]:
@@ -1031,7 +1034,6 @@ def test_shearbinop_same_op_fwd(spec, a, x):
 @pytest.mark.parametrize('spec,a,x', _bin_spec_params(1))
 def test_shearbinop_same_op_rev(spec, a, x):
     name = spec['name']
-    op = spec['op']
     symbol = spec['symbol']
     ident = spec.get('identity', None)
     # FIXME
@@ -1042,7 +1044,11 @@ def test_shearbinop_same_op_rev(spec, a, x):
         return
     if spec.get('wrapper', False):
         return
-    expected_str = f"{symbol}({ident}, {symbol}({a}, {a}))" if _RE_FUNC.search(symbol) else f"({ident}) {symbol} (({a}) {symbol} ({a}))"
+    expected_str = (
+        f"{symbol}({ident}, {symbol}({a}, {a}))"
+        if _RE_FUNC.search(symbol)
+        else f"({ident}) {symbol} (({a}) {symbol} ({a}))"
+    )
     expected = eval(expected_str)
     eval_str = f"{symbol}({ident}, {symbol}(X, X))" if _RE_FUNC.search(symbol) else f"({ident}) {symbol} (X {symbol} X)"
     for func in [eval(eval_str), getattr(getattr(X, f"{name}_r")(X), f"{name}_r")(ident)]:
@@ -1053,7 +1059,6 @@ def test_shearbinop_same_op_rev(spec, a, x):
 @pytest.mark.parametrize('spec,a,b,x', _bin_spec_params(2))
 def test_shearbinop_1_same_op_fwd(spec, a, b, x):
     name = spec['name']
-    op = spec['op']
     symbol = spec['symbol']
     ident = spec.get('identity', None)
     # FIXME
@@ -1064,7 +1069,11 @@ def test_shearbinop_1_same_op_fwd(spec, a, b, x):
         return
     if spec.get('wrapper', False):
         return
-    expected_str = f"{symbol}({symbol}({a}, {b}), {a})" if _RE_FUNC.search(symbol) else f"(({a}) {symbol} ({b})) {symbol} ({a})"
+    expected_str = (
+        f"{symbol}({symbol}({a}, {b}), {a})"
+        if _RE_FUNC.search(symbol)
+        else f"(({a}) {symbol} ({b})) {symbol} ({a})"
+    )
     expected = eval(expected_str)
     eval_str = f"{symbol}({symbol}(X, {b}), X)" if _RE_FUNC.search(symbol) else f"(X {symbol} ({b})) {symbol} X"
     for func in [eval(eval_str), getattr(getattr(X, name)(b), name)(X)]:
@@ -1074,7 +1083,6 @@ def test_shearbinop_1_same_op_fwd(spec, a, b, x):
 @pytest.mark.parametrize('spec,a,b,c,x', _bin_spec_params(3))
 def test_shearbinop_1_diff_op_fwd(spec, a, b, c, x):
     name = spec['name']
-    op = spec['op']
     symbol = spec['symbol']
     guard = spec.get('guard', lambda a, b: True)
     if not (guard(a, b) and guard(b, c)):
@@ -1087,7 +1095,6 @@ def test_shearbinop_1_diff_op_fwd(spec, a, b, c, x):
 @pytest.mark.parametrize('spec,a,b,c,x', _bin_spec_params(3))
 def test_shearbinop_2_diff_op_fwd(spec, a, b, c, x):
     name = spec['name']
-    op = spec['op']
     symbol = spec['symbol']
     guard = spec.get('guard', lambda a, b: True)
     if not (guard(a, b) and guard(b, c)):
@@ -1102,7 +1109,6 @@ def test_shearbinop_2_diff_op_fwd(spec, a, b, c, x):
 @pytest.mark.parametrize('spec,a,b,c,x', _bin_spec_params(3))
 def test_shearbinop_3_diff_op_fwd(spec, a, b, c, x):
     name = spec['name']
-    op = spec['op']
     symbol = spec['symbol']
     guard = spec.get('guard', lambda a, b: True)
     if not (guard(a, b) and guard(b, c)):

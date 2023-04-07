@@ -1,7 +1,5 @@
 import random
 
-import pytest
-
 from seittik.utils.randutils import SHARED_RANDOM
 
 

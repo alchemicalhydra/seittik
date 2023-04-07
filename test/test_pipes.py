@@ -44,9 +44,8 @@ def test_pipe_repr_step():
 
 def test_pipe_missing_source():
     p = Pipe()
-    with pytest.raises(TypeError) as excinfo:
+    with pytest.raises(TypeError, match="A source must be provided to evaluate a pipe"):
         list(p)
-    assert str(excinfo.value) == "A source must be provided to evaluate a pipe"
 
 
 def test_pipe_missing_source_sink_partial():
@@ -213,7 +212,7 @@ def test_pipe_getitem_slicing():
 
 def test_pipe_getitem_bad():
     p = Pipe(['a', 'b', 'c', 'd', 'e'])
-    with pytest.raises(TypeError) as excinfo:
+    with pytest.raises(TypeError):
         p['meow']
 
 
@@ -247,7 +246,6 @@ def test_pipe_cache():
 # Random number generation setup
 
 def test_pipe_rng_str_shared():
-    import random
     from seittik.utils.randutils import SharedRandom
     p1 = Pipe([1, 2, 3], rng='shared')
     assert isinstance(p1._rng, SharedRandom)
@@ -271,13 +269,11 @@ def test_pipe_rng_str_crypto():
 
 
 def test_pipe_rng_str_invalid():
-    import random
     with pytest.raises(ValueError):
         Pipe([1, 2, 3], rng='invalid')
 
 
 def test_pipe_rng_other_invalid():
-    import random
     with pytest.raises(TypeError):
         Pipe([1, 2, 3], rng=13)
 
@@ -293,7 +289,7 @@ def test_pipe_rng_random_subclass():
 
 def test_pipe_rng_reset():
     import random
-    from seittik.utils.randutils import SharedRandom, SHARED_RANDOM
+    from seittik.utils.randutils import SHARED_RANDOM
     p = Pipe([1, 2, 3], rng='pseudo')
     assert isinstance(p._rng, random.Random)
     assert p._rng is not SHARED_RANDOM
@@ -461,7 +457,8 @@ def test_pipe_source_roll_size(random_seed_0):
 # Pipe.unfold
 
 def test_pipe_source_unfold():
-    build_pow2 = lambda x: (x, x * 2)
+    def build_pow2(x):
+        return (x, x * 2)
     p = Pipe.unfold(2, build_pow2)
     assert list(p.take(6)) == [2, 4, 8, 16, 32, 64]
 
@@ -488,14 +485,14 @@ def test_pipe_source_walk():
     p = Pipe.walk(['a', ['b', ['c', ['d', ['e']]]]])
     assert list(p) == [
         (['a', ['b', ['c', ['d', ['e']]]]], 0, 'a'),
-         (['a', ['b', ['c', ['d', ['e']]]]], 1, ['b', ['c', ['d', ['e']]]]),
-         (['b', ['c', ['d', ['e']]]], 0, 'b'),
-         (['b', ['c', ['d', ['e']]]], 1, ['c', ['d', ['e']]]),
-         (['c', ['d', ['e']]], 0, 'c'),
-         (['c', ['d', ['e']]], 1, ['d', ['e']]),
-         (['d', ['e']], 0, 'd'),
-         (['d', ['e']], 1, ['e']),
-         (['e'], 0, 'e'),
+        (['a', ['b', ['c', ['d', ['e']]]]], 1, ['b', ['c', ['d', ['e']]]]),
+        (['b', ['c', ['d', ['e']]]], 0, 'b'),
+        (['b', ['c', ['d', ['e']]]], 1, ['c', ['d', ['e']]]),
+        (['c', ['d', ['e']]], 0, 'c'),
+        (['c', ['d', ['e']]], 1, ['d', ['e']]),
+        (['d', ['e']], 0, 'd'),
+        (['d', ['e']], 1, ['e']),
+        (['e'], 0, 'e'),
     ]
 
 
@@ -603,16 +600,14 @@ def test_pipe_sourcestep_zip_constructor_fillvalue():
 
 
 def test_pipe_sourcestep_zip_constructor_fillvalue_and_strict():
-    with pytest.raises(TypeError) as excinfo:
-        p = Pipe.zip('abc', [6, 7], fillvalue=None, strict=True)
-    assert str(excinfo.value) == "'fillvalue' and 'strict' are mutually exclusive"
+    with pytest.raises(TypeError, match="'fillvalue' and 'strict' are mutually exclusive"):
+        Pipe.zip('abc', [6, 7], fillvalue=None, strict=True)
 
 
 def test_pipe_sourcestep_zip_constructor_strict():
     p = Pipe.zip('abc', [6, 7], strict=True)
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError, match=r'zip\(\) argument 2 is shorter than argument 1'):
         list(p)
-    assert str(excinfo.value) == 'zip() argument 2 is shorter than argument 1'
 
 
 def test_pipe_sourcestep_zip_intermediate():
@@ -631,9 +626,8 @@ def test_pipe_sourcestep_zip_intermediate_fillvalue():
 
 
 def test_pipe_sourcestep_zip_intermediate_fillvalue_and_strict():
-    with pytest.raises(TypeError) as excinfo:
-        p = Pipe(['abc', [6, 7]]).zip(fillvalue=None, strict=True)
-    assert str(excinfo.value) == "'fillvalue' and 'strict' are mutually exclusive"
+    with pytest.raises(TypeError, match="'fillvalue' and 'strict' are mutually exclusive"):
+        Pipe(['abc', [6, 7]]).zip(fillvalue=None, strict=True)
 
 
 def test_pipe_sourcestep_zip_intermediate_strict():
@@ -685,7 +679,7 @@ def test_pipe_step_chunk_even_3():
 
 
 def test_pipe_step_chunk_bad_mutex_args():
-    with pytest.raises(TypeError) as excinfo:
+    with pytest.raises(TypeError):
         Pipe('abcde').chunk(2, fillvalue='x', fair=True)
 
 
@@ -870,17 +864,17 @@ def test_pipe_step_enumerate_info():
     assert a_i.index == 0
     assert a_i.is_first
     assert not a_i.is_last
-    assert repr(a_i) == f'<EnumerateInfo index=0 is_first=True is_last=False>'
+    assert repr(a_i) == '<EnumerateInfo index=0 is_first=True is_last=False>'
     assert b_v == 'b'
     assert b_i.index == 1
     assert not b_i.is_first
     assert not b_i.is_last
-    assert repr(b_i) == f'<EnumerateInfo index=1 is_first=False is_last=False>'
+    assert repr(b_i) == '<EnumerateInfo index=1 is_first=False is_last=False>'
     assert c_v == 'c'
     assert c_i.index == 2
     assert not c_i.is_first
     assert c_i.is_last
-    assert repr(c_i) == f'<EnumerateInfo index=2 is_first=False is_last=True>'
+    assert repr(c_i) == '<EnumerateInfo index=2 is_first=False is_last=True>'
 
 
 # Pipe.filter
@@ -981,7 +975,7 @@ def test_pipe_step_prepend_2():
 # Pipe.randitem
 
 def test_pipe_step_randitem(random_seed_0):
-    p= Pipe('abc').randitem().take(5)
+    p = Pipe('abc').randitem().take(5)
     assert list(p) == ['b', 'b', 'a', 'b', 'c']
 
 
@@ -1067,7 +1061,13 @@ def test_pipe_step_remap_mapping_drop_keep():
 def test_pipe_step_remap_mapping_callables():
     p = (
         Pipe([{'a': 1, 'b': 2, 'c': 3, 'd': 4}])
-        .remap({'a': lambda a: a * 3, 'b': lambda b: b * 5, 'c': lambda c: Pipe.DROP, 'd': lambda d: Pipe.KEEP, 'e': lambda item: 17})
+        .remap({
+            'a': lambda a: a * 3,
+            'b': lambda b: b * 5,
+            'c': lambda c: Pipe.DROP,
+            'd': lambda d: Pipe.KEEP,
+            'e': lambda item: 17,
+        })
     )
     assert list(p) == [{'a': 3, 'b': 10, 'd': 4, 'e': 17}]
 
@@ -1419,8 +1419,8 @@ def test_pipe_sink_equal_false():
 
 
 def test_pipe_sink_equal_empty_without_fillvalue():
-    with pytest.raises(ValueError) as excinfo:
-        p = Pipe([]).equal()
+    with pytest.raises(ValueError):
+        Pipe([]).equal()
 
 
 def test_pipe_sink_equal_empty_with_fillvalue():
@@ -1433,9 +1433,9 @@ def test_pipe_sink_exhaust():
     src = iter(['a', 'b', 'c', 'd', 'e'])
     p = Pipe(src)
     assert p.exhaust() is None
-    with pytest.raises(StopIteration) as excinfo:
+    with pytest.raises(StopIteration):
         next(src)
-    with pytest.raises(StopIteration) as excinfo:
+    with pytest.raises(StopIteration):
         next(iter(p))
 
 
@@ -1503,8 +1503,8 @@ def test_pipe_sink_identical_false():
 
 
 def test_pipe_sink_identical_empty_without_fillvalue():
-    with pytest.raises(ValueError) as excinfo:
-        p = Pipe([]).identical()
+    with pytest.raises(ValueError):
+        Pipe([]).identical()
 
 
 def test_pipe_sink_identical_empty_with_fillvalue():
@@ -1529,8 +1529,8 @@ def test_pipe_sink_max_default():
 
 
 def test_pipe_sink_max_empty():
-    with pytest.raises(ValueError) as excinfo:
-        p = Pipe([]).max()
+    with pytest.raises(ValueError):
+        Pipe([]).max()
 
 
 # Pipe.mean
@@ -1599,8 +1599,8 @@ def test_pipe_sink_min_default():
 
 
 def test_pipe_sink_min_empty():
-    with pytest.raises(ValueError) as excinfo:
-        p = Pipe([]).min()
+    with pytest.raises(ValueError):
+        Pipe([]).min()
 
 
 # Pipe.minmax
@@ -1621,8 +1621,8 @@ def test_pipe_sink_minmax_default():
 
 
 def test_pipe_sink_minmax_empty():
-    with pytest.raises(ValueError) as excinfo:
-        p = Pipe([]).minmax()
+    with pytest.raises(ValueError):
+        Pipe([]).minmax()
 
 
 # Pipe.mode
@@ -1681,12 +1681,12 @@ def test_pipe_sink_nth_ix():
 
 
 def test_pipe_sink_nth_indexerror_seq():
-    with pytest.raises(IndexError) as excinfo:
+    with pytest.raises(IndexError):
         Pipe(['a', 'b', 'c', 'd', 'e']).nth(5)
 
 
 def test_pipe_sink_nth_indexerror_ix():
-    with pytest.raises(IndexError) as excinfo:
+    with pytest.raises(IndexError):
         Pipe(iter(['a', 'b', 'c', 'd', 'e'])).nth(5)
 
 
@@ -1783,6 +1783,12 @@ def test_pipe_complex_mapfilter():
     p = Pipe([1, 2, 3, 4, 5]).map(lambda x: x * 3).filter(lambda x: x % 2 == 0)
     assert list(p) == [6, 12]
 
+
 def test_pipe_complex_map_filter_fold():
-    res = Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).map(lambda x: x * 3).filter(lambda x: x % 2 == 0).fold(lambda a, b: a + b)
+    res = (
+        Pipe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        .map(lambda x: x * 3)
+        .filter(lambda x: x % 2 == 0)
+        .fold(lambda a, b: a + b)
+    )
     assert res == 90

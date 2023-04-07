@@ -1,4 +1,4 @@
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 
 import pytest
 
@@ -170,7 +170,10 @@ def test_walk_collection_strategy_bfs():
 
 
 def test_walk_collection_children_str():
-    w = walk_collection(['a', {'x': {'a': [8, 9], 'x': [13, 14]}, 'y': {'b': 2}}, {'d': 'e', 'x': {'x': 99}}], children='x')
+    w = walk_collection(
+        ['a', {'x': {'a': [8, 9], 'x': [13, 14]}, 'y': {'b': 2}}, {'d': 'e', 'x': {'x': 99}}],
+        children='x',
+    )
     assert list(w) == [
         (['a', {'x': {'a': [8, 9], 'x': [13, 14]}, 'y': {'b': 2}}, {'d': 'e', 'x': {'x': 99}}], 0, 'a'),
         (['a', {'x': {'a': [8, 9], 'x': [13, 14]}, 'y': {'b': 2}}, {'d': 'e', 'x': {'x': 99}}],
@@ -180,7 +183,11 @@ def test_walk_collection_children_str():
         ({'a': [8, 9], 'x': [13, 14]}, 'x', [13, 14]),
         ([13, 14], 0, 13),
         ([13, 14], 1, 14),
-        (['a', {'x': {'a': [8, 9], 'x': [13, 14]}, 'y': {'b': 2}}, {'d': 'e', 'x': {'x': 99}}], 2, {'d': 'e', 'x': {'x': 99}}),
+        (
+            ['a', {'x': {'a': [8, 9], 'x': [13, 14]}, 'y': {'b': 2}}, {'d': 'e', 'x': {'x': 99}}],
+            2,
+            {'d': 'e', 'x': {'x': 99}},
+        ),
         ({'d': 'e', 'x': {'x': 99}}, 'x', {'x': 99}),
         ({'x': 99}, 'x', 99),
     ]
